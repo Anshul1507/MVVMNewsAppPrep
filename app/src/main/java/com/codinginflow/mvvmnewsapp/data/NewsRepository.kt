@@ -25,15 +25,16 @@ class NewsRepository @Inject constructor(
             saveFetchResult = { serverBreakingNewsArticles ->
                 // TODO: 14.01.2021 transaction
                 val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
-                val breakingNewsArticles = serverBreakingNewsArticles.map { article ->
+                val breakingNewsArticles = serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
                     val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
-                        bookmarkedArticle.url == article.url
+                        bookmarkedArticle.url == serverBreakingNewsArticle.url
                     }
-                    article.copy(isBreakingNews = true, isBookmarked = bookmarked)
+                    serverBreakingNewsArticle.copy(isBreakingNews = true, isBookmarked = bookmarked)
                 }
 
-                newsArticleDao.deleteNonBookmarkedArticles()
+                newsArticleDao.resetAllBreakingNews()
                 newsArticleDao.insert(breakingNewsArticles)
+                newsArticleDao.deleteAllObsoleteArticles()
             },
             shouldFetch = {
                 // TODO: 14.01.2021 Implement timestamp based approach
