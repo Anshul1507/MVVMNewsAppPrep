@@ -5,7 +5,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -49,10 +48,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 textViewError.isVisible = result is Resource.Error
 
                 newsAdapter.submitList(result.data)
-
-                if (result is Resource.Error) {
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
             }
 
             swipeRefreshLayout.setOnRefreshListener {
@@ -66,19 +61,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         binding.recyclerView.scrollToPosition(0)
         viewModel.onRefresh()
     }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_breaking_news, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) =
-        when (item.itemId) {
-            R.id.action_refresh -> {
-                viewModel.onRefresh()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
 
     override fun onDestroyView() {
         super.onDestroyView()

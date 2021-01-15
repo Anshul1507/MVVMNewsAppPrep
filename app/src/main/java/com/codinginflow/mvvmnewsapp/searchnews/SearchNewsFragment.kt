@@ -45,14 +45,14 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
                 progressBar.isVisible = result is Resource.Loading
                 textViewError.isVisible = result is Resource.Error
                 recyclerView.showIfOrInvisible(result is Resource.Success && result.data?.isNotEmpty() == true)
-                textViewEmpty.isVisible = result is Resource.Success && result.data?.isEmpty() == true
+                textViewEmpty.isVisible = result.data?.isEmpty() == true && result !is Resource.Error
 
                 when (result) {
                     is Resource.Success -> {
                         newsAdapter.submitList(result.data)
                     }
                     is Resource.Error -> {
-                        textViewError.text = result.message
+                        textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
                     }
                 }
             }

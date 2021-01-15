@@ -1,6 +1,9 @@
 package com.codinginflow.mvvmnewsapp.bookmarks
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -40,5 +43,20 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks) {
                 recyclerView.isVisible = bookmarks.isNotEmpty()
             }
         }
+
+        setHasOptionsMenu(true)
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_bookmarks, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) =
+        when (item.itemId) {
+            R.id.action_delete_all_bookmarks -> {
+                viewModel.onDeleteAllBookmarks()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
 }

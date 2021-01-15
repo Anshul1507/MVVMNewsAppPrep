@@ -5,6 +5,7 @@ import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.networkBoundResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class NewsRepository @Inject constructor(
@@ -12,19 +13,34 @@ class NewsRepository @Inject constructor(
     private val newsArticleDao: NewsArticleDao
 ) {
 
-    fun getBreakingNews(): Flow<Resource<List<NewsArticle>>> =
+    fun getBreakingNews(onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
-                newsArticleDao.getAllArticles()
+                newsArticleDao.getTopHeadlines()
             },
             fetch = {
                 val response = newsApi.getTopHeadlines()
                 response.articles
             },
-            saveFetchResult = { articles ->
-                newsArticleDao.deleteAll()
-                newsArticleDao.insert(articles)
-            }
+            saveFetchResult = { serverBreakingNewsArticles ->
+                // TODO: 14.01.2021 transaction
+                val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
+                val breakingNewsArticles = serverBreakingNewsArticles.map { article ->
+                    val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
+                        bookmarkedArticle.url == article.url
+                    }
+                    article.copy(isBreakingNews = true, isBookmarked = bookmarked)
+                }
+
+                newsArticleDao.deleteNonBookmarkedArticles()
+                newsArticleDao.insert(breakingNewsArticles)
+            },
+            shouldFetch = {
+                // TODO: 14.01.2021 Implement timestamp based approach
+                true
+            },
+            // TODO: 15.01.2021 Is this legit for 1 time error messages?
+            onFetchFailed = onFetchFailed
         )
 
     suspend fun searchNews(query: String): Resource<List<NewsArticle>> =
@@ -33,7 +49,7 @@ class NewsRepository @Inject constructor(
             val response = newsApi.findNews(query)
             Resource.Success(response.articles)
         } catch (t: Throwable) {
-            Resource.Error(t.localizedMessage ?: "An unknown error occurred")
+            Resource.Error(t)
         }
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =
@@ -41,5 +57,9 @@ class NewsRepository @Inject constructor(
 
     suspend fun update(article: NewsArticle) {
         newsArticleDao.update(article)
+    }
+
+    suspend fun deleteAllBookmarks() {
+        newsArticleDao.deleteAllBookmarks()
     }
 }

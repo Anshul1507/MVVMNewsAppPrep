@@ -13,7 +13,11 @@ class BreakingNewsViewModel @ViewModelInject constructor(
     private val refreshTrigger = MutableLiveData(Unit)
 
     val breakingNews = refreshTrigger.switchMap {
-        repository.getBreakingNews().asLiveData()
+        repository.getBreakingNews(
+            onFetchFailed = {
+                // TODO: 15.01.2021 Show one-off error message
+            }
+        ).asLiveData()
     }
 
     fun onRefresh() {
