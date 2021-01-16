@@ -1,9 +1,6 @@
 package com.codinginflow.mvvmnewsapp.breakingnews
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -11,7 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsAdapter
+import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
 import com.codinginflow.mvvmnewsapp.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     private val viewModel: BreakingNewsViewModel by viewModels()
 
-    private lateinit var newsAdapter: NewsAdapter
+    private lateinit var newsAdapter: NewsListAdapter
 
     private var _binding: FragmentBreakingNewsBinding? = null
     private val binding get() = _binding!!
@@ -29,7 +26,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
         _binding = FragmentBreakingNewsBinding.bind(view)
 
-        newsAdapter = NewsAdapter(
+        newsAdapter = NewsListAdapter(
             onBookmarkClick = { article ->
                 viewModel.onBookmarkClick(article)
             }

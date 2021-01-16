@@ -5,29 +5,25 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsAdapter
-import com.codinginflow.mvvmnewsapp.util.Resource
-import com.codinginflow.mvvmnewsapp.util.showIfOrInvisible
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
     private val viewModel: SearchNewsViewModel by viewModels()
 
-    private lateinit var newsAdapter: NewsAdapter
+    private lateinit var newsPagingAdapter: NewsPagingAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val binding = FragmentSearchNewsBinding.bind(view)
 
-        newsAdapter = NewsAdapter(
+        newsPagingAdapter = NewsPagingAdapter(
             onBookmarkClick = { article ->
                 viewModel.onBookmarkClick(article)
             }
@@ -36,25 +32,16 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
         binding.apply {
             recyclerView.apply {
                 setHasFixedSize(true)
-                adapter = newsAdapter
+                adapter = newsPagingAdapter.withLoadStateHeaderAndFooter(
+                    header = NewsLoadStateAdapter(newsPagingAdapter::retry),
+                    footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
+                )
                 layoutManager = LinearLayoutManager(requireContext())
                 itemAnimator?.changeDuration = 0
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
-                progressBar.isVisible = result is Resource.Loading
-                textViewError.isVisible = result is Resource.Error
-                recyclerView.showIfOrInvisible(result is Resource.Success && result.data?.isNotEmpty() == true)
-                textViewEmpty.isVisible = result.data?.isEmpty() == true && result !is Resource.Error
-
-                when (result) {
-                    is Resource.Success -> {
-                        newsAdapter.submitList(result.data)
-                    }
-                    is Resource.Error -> {
-                        textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
-                    }
-                }
+                newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
             }
         }
         setHasOptionsMenu(true)
@@ -71,8 +58,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrBlank()) {
-                    newsAdapter.submitList(emptyList())
-                    viewModel.findNews(query)
+                    viewModel.searchArticles(query)
                     searchView.clearFocus()
                 }
                 return true

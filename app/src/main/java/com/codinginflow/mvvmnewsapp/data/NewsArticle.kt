@@ -11,5 +11,6 @@ data class NewsArticle(
     @PrimaryKey val url: String,
     val urlToImage: String?,
     val isBreakingNews: Boolean,
-    val isBookmarked: Boolean = false,
+    val isBookmarked: Boolean,
+    val isSearchResult: Boolean
 )

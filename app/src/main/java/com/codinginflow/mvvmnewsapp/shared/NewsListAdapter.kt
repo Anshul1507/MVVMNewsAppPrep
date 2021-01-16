@@ -12,8 +12,8 @@ import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.databinding.ItemNewsArticleBinding
 
-class NewsAdapter(private val onBookmarkClick: (NewsArticle) -> Unit) :
-    ListAdapter<NewsArticle, NewsAdapter.NewsViewHolder>(ARTICLE_COMPARATOR) {
+class NewsListAdapter(private val onBookmarkClick: (NewsArticle) -> Unit) :
+    ListAdapter<NewsArticle, NewsListAdapter.NewsViewHolder>(ARTICLE_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
         val binding =

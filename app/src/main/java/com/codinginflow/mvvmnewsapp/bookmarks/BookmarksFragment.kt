@@ -11,7 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsAdapter
+import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,7 +23,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks) {
 
         val binding = FragmentBookmarksBinding.bind(view)
 
-        val bookmarksAdapter = NewsAdapter(
+        val bookmarksAdapter = NewsListAdapter(
             onBookmarkClick = { article ->
                 viewModel.onBookmarkClick(article)
             }

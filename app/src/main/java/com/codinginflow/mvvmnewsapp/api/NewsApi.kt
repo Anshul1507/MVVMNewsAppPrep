@@ -14,12 +14,14 @@ interface NewsApi {
 
     @Headers("X-Api-Key: $API_KEY")
     @GET("everything")
-    suspend fun findNews(
-        @Query("q") query: String
+    suspend fun searchNews(
+        @Query("q") query: String,
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int
     ): NewsResponse
 
     @Headers("X-Api-Key: $API_KEY")
     // TODO: 15.01.2021 Small page size for testing purposes
     @GET("top-headlines?country=us&pageSize=5")
-    suspend fun getTopHeadlines() : NewsResponse
+    suspend fun getTopHeadlines(): NewsResponse
 }

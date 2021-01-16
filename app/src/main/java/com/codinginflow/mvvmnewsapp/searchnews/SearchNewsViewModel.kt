@@ -1,30 +1,31 @@
 package com.codinginflow.mvvmnewsapp.searchnews
 
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.cachedIn
 import com.codinginflow.mvvmnewsapp.api.NewsApi
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
 import com.codinginflow.mvvmnewsapp.util.Resource
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
 class SearchNewsViewModel @ViewModelInject constructor(
-    private val repository: NewsRepository
+    private val repository: NewsRepository,
+    @Assisted state: SavedStateHandle
 ) : ViewModel() {
 
-    private val _newsArticles = MutableLiveData<Resource<List<NewsArticle>>>()
-    val newsArticles: LiveData<Resource<List<NewsArticle>>> = _newsArticles
+    private val currentQuery = state.getLiveData<String?>("currentQuery")
 
-    fun findNews(query: String) {
-        viewModelScope.launch {
-            _newsArticles.value = Resource.Loading()
-            val result = repository.searchNews(query)
-            _newsArticles.value = result
-        }
+    val newsArticles = currentQuery.switchMap { query ->
+        repository.getSearchResults(query).asLiveData().cachedIn(viewModelScope)
+    }
+
+    fun searchArticles(query: String) {
+        currentQuery.value = query
     }
 
     fun onBookmarkClick(article: NewsArticle) {

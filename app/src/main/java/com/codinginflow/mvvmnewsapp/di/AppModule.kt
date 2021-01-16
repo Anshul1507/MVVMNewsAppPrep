@@ -41,8 +41,7 @@ object AppModule {
         .build()
 
     @Provides
-    @Singleton
-    fun provideArticleDao(db: NewsArticleDatabase) = db.articleDao()
+    fun provideArticleDao(db: NewsArticleDatabase) = db.newsArticleDao()
 
     @ApplicationScope
     @Provides

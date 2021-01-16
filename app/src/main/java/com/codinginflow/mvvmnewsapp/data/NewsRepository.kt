@@ -1,5 +1,10 @@
 package com.codinginflow.mvvmnewsapp.data
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.room.withTransaction
 import com.codinginflow.mvvmnewsapp.api.NewsApi
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.networkBoundResource
@@ -10,48 +15,52 @@ import javax.inject.Inject
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
-    private val newsArticleDao: NewsArticleDao
+    private val newsDb: NewsArticleDatabase,
+    private val newsArticleDatabase: NewsArticleDatabase
 ) {
+    private val newsArticleDao = newsDb.newsArticleDao()
 
     fun getBreakingNews(onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
-                newsArticleDao.getTopHeadlines()
+                newsArticleDao.getAllBreakingNews()
             },
             fetch = {
                 val response = newsApi.getTopHeadlines()
                 response.articles
             },
             saveFetchResult = { serverBreakingNewsArticles ->
-                // TODO: 14.01.2021 transaction
                 val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
-                val breakingNewsArticles = serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
-                    val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
-                        bookmarkedArticle.url == serverBreakingNewsArticle.url
+                val breakingNewsArticles =
+                    serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
+                        val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
+                            bookmarkedArticle.url == serverBreakingNewsArticle.url
+                        }
+                        serverBreakingNewsArticle.copy(
+                            isBreakingNews = true,
+                            isBookmarked = bookmarked
+                        )
                     }
-                    serverBreakingNewsArticle.copy(isBreakingNews = true, isBookmarked = bookmarked)
-                }
 
-                newsArticleDao.resetAllBreakingNews()
-                newsArticleDao.insert(breakingNewsArticles)
-                newsArticleDao.deleteAllObsoleteArticles()
+                newsDb.withTransaction {
+                    newsArticleDao.resetBreakingNews()
+                    newsArticleDao.insertAll(breakingNewsArticles)
+                    newsArticleDao.deleteAllObsoleteArticles()
+                }
             },
             shouldFetch = {
                 // TODO: 14.01.2021 Implement timestamp based approach
                 true
             },
-            // TODO: 15.01.2021 Is this legit for 1 time error messages?
             onFetchFailed = onFetchFailed
         )
 
-    suspend fun searchNews(query: String): Resource<List<NewsArticle>> =
-        try {
-            delay(500)
-            val response = newsApi.findNews(query)
-            Resource.Success(response.articles)
-        } catch (t: Throwable) {
-            Resource.Error(t)
-        }
+    fun getSearchResults(query: String): Flow<PagingData<NewsArticle>> =
+        Pager(
+            config = PagingConfig(pageSize = 20, maxSize = 100, enablePlaceholders = false),
+            remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
+            pagingSourceFactory = { newsArticleDatabase.newsArticleDao().getAllSearchResults() }
+        ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =
         newsArticleDao.getAllBookmarkedArticles()
@@ -61,6 +70,6 @@ class NewsRepository @Inject constructor(
     }
 
     suspend fun deleteAllBookmarks() {
-        newsArticleDao.deleteAllBookmarks()
+        newsArticleDao.resetBookmarks()
     }
 }
