@@ -1,6 +1,5 @@
 package com.codinginflow.mvvmnewsapp.data
 
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -8,10 +7,13 @@ import androidx.room.withTransaction
 import com.codinginflow.mvvmnewsapp.api.NewsApi
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.networkBoundResource
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
+import java.text.DateFormat
 import javax.inject.Inject
+
+const val FIVE_MINUTES_IN_MILLIS = 5 * 60 * 1000 // short span for easier testing
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
@@ -20,25 +22,35 @@ class NewsRepository @Inject constructor(
 ) {
     private val newsArticleDao = newsDb.newsArticleDao()
 
-    fun getBreakingNews(onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
+    fun getBreakingNews(forceRefresh: Boolean, onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
-                newsArticleDao.getAllBreakingNews()
+                newsArticleDao.getCachedBreakingNews()
             },
             fetch = {
                 val response = newsApi.getTopHeadlines()
+                Timber.d("Fetched: ${response.articles}")
                 response.articles
             },
             saveFetchResult = { serverBreakingNewsArticles ->
                 val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
+                val cachedSearchResults = newsArticleDao.getCachedSearchResults()
+
                 val breakingNewsArticles =
                     serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
                         val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
                             bookmarkedArticle.url == serverBreakingNewsArticle.url
                         }
-                        serverBreakingNewsArticle.copy(
+                        val inSearchResultsCache = cachedSearchResults.any { searchResultArticle ->
+                            searchResultArticle.url == serverBreakingNewsArticle.url
+                        }
+                        NewsArticle(
+                            title = serverBreakingNewsArticle.title,
+                            url = serverBreakingNewsArticle.url,
+                            urlToImage = serverBreakingNewsArticle.urlToImage,
                             isBreakingNews = true,
-                            isBookmarked = bookmarked
+                            isBookmarked = bookmarked,
+                            isSearchResult = inSearchResultsCache
                         )
                     }
 
@@ -48,18 +60,39 @@ class NewsRepository @Inject constructor(
                     newsArticleDao.deleteAllObsoleteArticles()
                 }
             },
-            shouldFetch = {
-                // TODO: 14.01.2021 Implement timestamp based approach
-                true
+            shouldFetch = { cachedArticles ->
+                Timber.d("shouldFetch with forceRefresh = $forceRefresh")
+                if (forceRefresh) {
+                    true
+                } else {
+                    val sortedArticles = cachedArticles.sortedBy { article ->
+                        article.updatedAt
+                    }
+                    val oldestTimestamp = sortedArticles.firstOrNull()?.updatedAt
+                    val needsRefresh =
+                        oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - FIVE_MINUTES_IN_MILLIS
+                    Timber.d(
+                        "oldestTimestamp = ${
+                            DateFormat.getDateTimeInstance().format(oldestTimestamp)
+                        }"
+                    )
+                    Timber.d(
+                        "currentTimestamp = ${
+                            DateFormat.getDateTimeInstance().format(System.currentTimeMillis())
+                        }"
+                    )
+                    Timber.d("needsRefresh: $needsRefresh")
+                    needsRefresh
+                }
             },
             onFetchFailed = onFetchFailed
         )
 
     fun getSearchResults(query: String): Flow<PagingData<NewsArticle>> =
         Pager(
-            config = PagingConfig(pageSize = 20, maxSize = 100, enablePlaceholders = false),
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
-            pagingSourceFactory = { newsArticleDatabase.newsArticleDao().getAllSearchResults() }
+            pagingSourceFactory = { newsArticleDatabase.newsArticleDao().getSearchResultsPaged() }
         ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =

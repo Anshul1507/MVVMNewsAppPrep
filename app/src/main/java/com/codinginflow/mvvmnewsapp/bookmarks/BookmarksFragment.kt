@@ -1,5 +1,7 @@
 package com.codinginflow.mvvmnewsapp.bookmarks
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -11,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
+import com.codinginflow.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,12 +21,21 @@ import dagger.hilt.android.AndroidEntryPoint
 class BookmarksFragment : Fragment(R.layout.fragment_bookmarks) {
     private val viewModel: BookmarksViewModel by viewModels()
 
+    private var _binding: FragmentBookmarksBinding? = null
+    private val binding get() = _binding!!
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = FragmentBookmarksBinding.bind(view)
+        _binding = FragmentBookmarksBinding.bind(view)
 
+        // TODO: 16.01.2021 Can we get rid of duplication?
         val bookmarksAdapter = NewsListAdapter(
+            onItemClick = { article ->
+                val uri = Uri.parse(article.url)
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                binding.root.context.startActivity(intent)
+            },
             onBookmarkClick = { article ->
                 viewModel.onBookmarkClick(article)
             }
@@ -59,4 +71,13 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks) {
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    fun scrollUp() {
+        binding.recyclerView.scrollToPosition(0)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

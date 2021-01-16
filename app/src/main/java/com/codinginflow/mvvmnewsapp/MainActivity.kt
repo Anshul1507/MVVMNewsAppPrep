@@ -40,6 +40,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         transaction.commit()
+
+        when (selectedFragment) {
+            is BreakingNewsFragment -> title = "Breaking News"
+            is SearchNewsFragment -> title = "Search News"
+            is BookmarksFragment -> title = "Bookmarks"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +76,6 @@ class MainActivity : AppCompatActivity() {
 
         selectFragment(selectedFragment)
 
-        // TODO: 14.01.2021 Let Zhuinden check this scroll-up logic
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val currentFragment = selectedFragment
             when (item.itemId) {
@@ -79,22 +84,35 @@ class MainActivity : AppCompatActivity() {
                         currentFragment.scrollUpAndRefresh()
                     } else {
                         selectFragment(breakingNewsFragment)
-                        title = "Breaking News"
                     }
                     true
                 }
                 R.id.searchNewsFragment -> {
-                    selectFragment(searchNewsFragment)
-                    title = "Search News"
+                    if (currentFragment is SearchNewsFragment) {
+                        currentFragment.scrollUp()
+                    } else {
+                        selectFragment(searchNewsFragment)
+                    }
                     true
                 }
                 R.id.bookmarksFragment -> {
-                    selectFragment(bookmarksFragment)
-                    title = "Bookmarks"
+                    if (currentFragment is BookmarksFragment) {
+                        currentFragment.scrollUp()
+                    } else {
+                        selectFragment(bookmarksFragment)
+                    }
                     true
                 }
                 else -> false
             }
+        }
+    }
+
+    override fun onBackPressed() {
+        if (selectedFragment != breakingNewsFragment) {
+            selectFragment(breakingNewsFragment)
+        } else {
+            super.onBackPressed()
         }
     }
 

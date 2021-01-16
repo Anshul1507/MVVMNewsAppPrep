@@ -2,8 +2,7 @@ package com.codinginflow.mvvmnewsapp.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-// TODO: 15.01.2021 Separate classes for API response and DB object?
+import java.util.*
 
 @Entity(tableName = "news_articles")
 data class NewsArticle(
@@ -12,5 +11,6 @@ data class NewsArticle(
     val urlToImage: String?,
     val isBreakingNews: Boolean,
     val isBookmarked: Boolean,
-    val isSearchResult: Boolean
+    val isSearchResult: Boolean,
+    val updatedAt: Long = System.currentTimeMillis()
 )

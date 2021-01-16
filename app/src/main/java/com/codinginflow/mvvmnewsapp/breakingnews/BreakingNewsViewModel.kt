@@ -4,24 +4,38 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class BreakingNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
-    private val refreshTrigger = MutableLiveData(Unit)
+    private val refreshTrigger = MutableLiveData<Refresh>()
 
-    val breakingNews = refreshTrigger.switchMap {
+    private val eventChannel = Channel<Event>()
+    val events = eventChannel.receiveAsFlow()
+
+    val breakingNews = refreshTrigger.switchMap { refresh ->
+        Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
-            onFetchFailed = {
-                // TODO: 15.01.2021 Show one-off error message
+            Refresh.FORCE == refresh, // this direction makes it Java null-safe
+            onFetchFailed = { t ->
+                showErrorMessage(t)
             }
         ).asLiveData()
     }
 
-    fun onRefresh() {
-        refreshTrigger.value = Unit
+    fun onStart() {
+        Timber.d("Fragment onStart")
+        refreshTrigger.value = Refresh.NORMAL
+    }
+
+    fun onManualRefresh() {
+        Timber.d("onManualRefresh()")
+        refreshTrigger.value = Refresh.FORCE
     }
 
     fun onBookmarkClick(article: NewsArticle) {
@@ -32,19 +46,15 @@ class BreakingNewsViewModel @ViewModelInject constructor(
         }
     }
 
-    /*  private val _newsArticles = MutableLiveData<Resource<List<NewsArticle>>>()
-      val newsArticles: LiveData<Resource<List<NewsArticle>>> = _newsArticles
+    private fun showErrorMessage(t: Throwable) = viewModelScope.launch {
+        eventChannel.send(Event.ShowErrorMessage(t))
+    }
 
-      init {
-          refreshBreakingNews()
-      }
+    enum class Refresh {
+        FORCE, NORMAL
+    }
 
-      private fun refreshBreakingNews() {
-          viewModelScope.launch {
-              _newsArticles.value = Resource.Loading()
-              _newsArticles.value = repository.getBreakingNews()
-          }
-      }
-
-      fun onRefresh() = refreshBreakingNews()*/
+    sealed class Event {
+        data class ShowErrorMessage(val throwable: Throwable) : Event()
+    }
 }

@@ -3,14 +3,9 @@ package com.codinginflow.mvvmnewsapp.searchnews
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.cachedIn
-import com.codinginflow.mvvmnewsapp.api.NewsApi
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
-import com.codinginflow.mvvmnewsapp.util.Resource
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
 class SearchNewsViewModel @ViewModelInject constructor(

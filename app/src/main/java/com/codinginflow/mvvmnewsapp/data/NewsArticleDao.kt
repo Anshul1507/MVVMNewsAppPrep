@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NewsArticleDao {
 
-    @Query("SELECT * FROM news_articles")
-    fun getAllArticles(): Flow<List<NewsArticle>>
-
     @Query("SELECT * FROM news_articles WHERE isBreakingNews = 1")
-    fun getAllBreakingNews(): Flow<List<NewsArticle>>
+    fun getCachedBreakingNews(): Flow<List<NewsArticle>>
 
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
 
     @Query("SELECT * FROM news_articles WHERE isSearchResult = 1")
-    fun getAllSearchResults(): PagingSource<Int, NewsArticle>
+    fun getSearchResultsPaged(): PagingSource<Int, NewsArticle>
+
+    @Query("SELECT * FROM news_articles WHERE isSearchResult = 1")
+    suspend fun getCachedSearchResults(): List<NewsArticle>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(articles: List<NewsArticle>)

@@ -1,5 +1,7 @@
 package com.codinginflow.mvvmnewsapp.searchnews
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -18,12 +20,20 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
 
     private lateinit var newsPagingAdapter: NewsPagingAdapter
 
+    private var _binding: FragmentSearchNewsBinding? = null
+    private val binding get() = _binding!!
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = FragmentSearchNewsBinding.bind(view)
+        _binding = FragmentSearchNewsBinding.bind(view)
 
         newsPagingAdapter = NewsPagingAdapter(
+            onItemClick = { article ->
+                val uri = Uri.parse(article.url)
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                binding.root.context.startActivity(intent)
+            },
             onBookmarkClick = { article ->
                 viewModel.onBookmarkClick(article)
             }
@@ -68,5 +78,14 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
                 return false
             }
         })
+    }
+
+    fun scrollUp() {
+        binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

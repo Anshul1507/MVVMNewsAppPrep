@@ -3,7 +3,6 @@ package com.codinginflow.mvvmnewsapp.bookmarks
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
-import com.codinginflow.mvvmnewsapp.data.NewsArticleDao
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
 import kotlinx.coroutines.launch
 
