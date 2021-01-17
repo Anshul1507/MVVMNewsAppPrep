@@ -8,6 +8,7 @@ import com.codinginflow.mvvmnewsapp.api.NewsApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
+import timber.log.Timber
 import java.io.IOException
 import java.io.InvalidObjectException
 
@@ -27,6 +28,8 @@ class SearchNewsRemoteMediator(
     ): MediatorResult {
         val page = when (loadType) {
             LoadType.REFRESH -> {
+                // TODO: 17.01.2021 Looks like this is pointless since REFRESH clears the search
+                //  results from the database -> Probably just pass STARTING_PAGE_INDEX instead
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextKey?.minus(1) ?: NEWS_STARTING_PAGE_INDEX
             }
@@ -54,20 +57,6 @@ class SearchNewsRemoteMediator(
             val serverSearchResults = apiResponse.articles
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
-            newsDb.withTransaction {
-                if (loadType == LoadType.REFRESH) {
-                    newsDb.searchRemoteKeyDao().clearRemoteKeys()
-                    newsArticleDao.resetSearchResults()
-                    newsArticleDao.deleteAllObsoleteArticles()
-                }
-            }
-            val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
-            val nextKey = if (endOfPaginationReached) null else page + 1
-            val remoteKeys = serverSearchResults.map { article ->
-                SearchRemoteKeys(article.url, prevKey, nextKey)
-            }
-            newsDb.searchRemoteKeyDao().insertAll(remoteKeys)
-
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
             val cachedBreakingNewsArticles = newsArticleDao.getCachedBreakingNews().first()
 
@@ -75,9 +64,10 @@ class SearchNewsRemoteMediator(
                 val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
                     bookmarkedArticle.url == serverSearchResultArticle.url
                 }
-                val inBreakingNewsCache = cachedBreakingNewsArticles.any { breakingNewsArticle ->
-                    breakingNewsArticle.url == serverSearchResultArticle.url
-                }
+                val inBreakingNewsCache =
+                    cachedBreakingNewsArticles.any { breakingNewsArticle ->
+                        breakingNewsArticle.url == serverSearchResultArticle.url
+                    }
                 NewsArticle(
                     title = serverSearchResultArticle.title,
                     url = serverSearchResultArticle.url,
@@ -87,8 +77,23 @@ class SearchNewsRemoteMediator(
                     isSearchResult = true
                 )
             }
-            newsDb.newsArticleDao().insertAll(searchResults)
 
+            newsDb.withTransaction {
+                if (loadType == LoadType.REFRESH) {
+                    Timber.d("Mediator REFRESH -> clearing old data")
+                    newsDb.searchRemoteKeyDao().clearRemoteKeys()
+                    newsArticleDao.resetSearchResults()
+                    newsArticleDao.deleteAllObsoleteArticles()
+                }
+
+                val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
+                val nextKey = if (endOfPaginationReached) null else page + 1
+                val remoteKeys = serverSearchResults.map { article ->
+                    SearchRemoteKeys(article.url, prevKey, nextKey)
+                }
+                newsDb.searchRemoteKeyDao().insertAll(remoteKeys)
+                newsDb.newsArticleDao().insertAll(searchResults)
+            }
             MediatorResult.Success(endOfPaginationReached)
         } catch (exception: IOException) {
             MediatorResult.Error(exception)

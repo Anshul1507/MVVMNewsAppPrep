@@ -73,7 +73,7 @@ class NewsRepository @Inject constructor(
                         oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - FIVE_MINUTES_IN_MILLIS
                     Timber.d(
                         "oldestTimestamp = ${
-                            DateFormat.getDateTimeInstance().format(oldestTimestamp)
+                            DateFormat.getDateTimeInstance().format(oldestTimestamp ?: 0)
                         }"
                     )
                     Timber.d(
