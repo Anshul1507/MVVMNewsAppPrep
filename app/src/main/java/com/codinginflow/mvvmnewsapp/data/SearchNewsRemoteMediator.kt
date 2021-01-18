@@ -21,6 +21,8 @@ class SearchNewsRemoteMediator(
 ) : RemoteMediator<Int, NewsArticle>() {
 
     private val newsArticleDao = newsDb.newsArticleDao()
+    private val searchQueryDao = newsDb.searchQueryDao()
+    private val searchQueryArticlesDao = newsDb.searchQueryArticlesDao()
 
     override suspend fun load(
         loadType: LoadType,
@@ -74,25 +76,25 @@ class SearchNewsRemoteMediator(
                     urlToImage = serverSearchResultArticle.urlToImage,
                     isBreakingNews = inBreakingNewsCache,
                     isBookmarked = bookmarked,
-                    isSearchResult = true
                 )
             }
 
             newsDb.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     Timber.d("Mediator REFRESH -> clearing old data")
-                    newsDb.searchRemoteKeyDao().clearRemoteKeys()
-                    newsArticleDao.resetSearchResults()
-                    newsArticleDao.deleteAllObsoleteArticles()
+                    searchQueryDao.insert(SearchQuery(searchQuery))
+                    searchQueryArticlesDao.deleteCrossRefsForQuery(searchQuery)
+                    searchQueryArticlesDao.resetSearchResults(searchQuery)
+                    // TODO: 17.01.2021 Delete old articles?
                 }
 
                 val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
                 val nextKey = if (endOfPaginationReached) null else page + 1
-                val remoteKeys = serverSearchResults.map { article ->
-                    SearchRemoteKeys(article.url, prevKey, nextKey)
+                val crossRefs = serverSearchResults.map { article ->
+                    SearchArticleCrossRef(article.url, searchQuery, prevKey, nextKey)
                 }
-                newsDb.searchRemoteKeyDao().insertAll(remoteKeys)
-                newsDb.newsArticleDao().insertAll(searchResults)
+                searchQueryArticlesDao.insert(crossRefs)
+                newsArticleDao.insertAll(searchResults)
             }
             MediatorResult.Success(endOfPaginationReached)
         } catch (exception: IOException) {
@@ -102,24 +104,24 @@ class SearchNewsRemoteMediator(
         }
     }
 
-    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, NewsArticle>): SearchRemoteKeys? =
+    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, NewsArticle>): SearchArticleCrossRef? =
         state.pages.lastOrNull { it.data.isNotEmpty() }?.data?.lastOrNull()
             ?.let { article ->
-                newsDb.searchRemoteKeyDao().getRemoteKeyFromArticleUrl(article.url)
+                searchQueryArticlesDao.getCrossRefs(article.url, searchQuery)
             }
 
-    private suspend fun getRemoteKeyForFirstItem(state: PagingState<Int, NewsArticle>): SearchRemoteKeys? =
+    private suspend fun getRemoteKeyForFirstItem(state: PagingState<Int, NewsArticle>): SearchArticleCrossRef? =
         state.pages.firstOrNull { it.data.isNotEmpty() }?.data?.firstOrNull()
             ?.let { article ->
-                newsDb.searchRemoteKeyDao().getRemoteKeyFromArticleUrl(article.url)
+                searchQueryArticlesDao.getCrossRefs(article.url, searchQuery)
             }
 
     private suspend fun getRemoteKeyClosestToCurrentPosition(
         state: PagingState<Int, NewsArticle>
-    ): SearchRemoteKeys? =
+    ): SearchArticleCrossRef? =
         state.anchorPosition?.let { position ->
             state.closestItemToPosition(position)?.url?.let { articleUrl ->
-                newsDb.searchRemoteKeyDao().getRemoteKeyFromArticleUrl(articleUrl)
+                searchQueryArticlesDao.getCrossRefs(articleUrl, searchQuery)
             }
         }
 }

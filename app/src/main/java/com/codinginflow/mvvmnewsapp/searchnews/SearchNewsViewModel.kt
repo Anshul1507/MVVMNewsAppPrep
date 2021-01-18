@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class SearchNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository,
@@ -16,7 +17,8 @@ class SearchNewsViewModel @ViewModelInject constructor(
     private val currentQuery = state.getLiveData<String?>("currentQuery")
 
     val newsArticles = currentQuery.switchMap { query ->
-        repository.getSearchResults(query).asLiveData().cachedIn(viewModelScope)
+        Timber.d("search switchMap")
+        repository.getSearchResults(query).cachedIn(viewModelScope).asLiveData()
     }
 
     fun searchArticles(query: String) {

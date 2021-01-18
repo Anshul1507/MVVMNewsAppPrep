@@ -14,6 +14,8 @@ import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import dagger.hilt.android.AndroidEntryPoint
 
+// TODO: 18.01.2021 Implement swipe-to-refresh so that we can get unstuck after loading searches while offline
+
 @AndroidEntryPoint
 class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
     private val viewModel: SearchNewsViewModel by viewModels()

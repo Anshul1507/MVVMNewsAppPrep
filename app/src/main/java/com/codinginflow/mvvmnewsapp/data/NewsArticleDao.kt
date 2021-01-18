@@ -13,12 +13,6 @@ interface NewsArticleDao {
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
 
-    @Query("SELECT * FROM news_articles WHERE isSearchResult = 1")
-    fun getSearchResultsPaged(): PagingSource<Int, NewsArticle>
-
-    @Query("SELECT * FROM news_articles WHERE isSearchResult = 1")
-    suspend fun getCachedSearchResults(): List<NewsArticle>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(articles: List<NewsArticle>)
 
@@ -33,10 +27,4 @@ interface NewsArticleDao {
 
     @Query("UPDATE news_articles SET isBreakingNews = 0")
     suspend fun resetBreakingNews()
-
-    @Query("UPDATE news_articles SET isSearchResult = 0")
-    suspend fun resetSearchResults()
-
-    @Query("DELETE FROM news_articles WHERE isBookmarked = 0 AND isBreakingNews = 0 AND isSearchResult = 0")
-    suspend fun deleteAllObsoleteArticles()
 }

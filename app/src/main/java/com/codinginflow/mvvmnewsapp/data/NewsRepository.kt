@@ -34,15 +34,11 @@ class NewsRepository @Inject constructor(
             },
             saveFetchResult = { serverBreakingNewsArticles ->
                 val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
-                val cachedSearchResults = newsArticleDao.getCachedSearchResults()
 
                 val breakingNewsArticles =
                     serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
                         val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
                             bookmarkedArticle.url == serverBreakingNewsArticle.url
-                        }
-                        val inSearchResultsCache = cachedSearchResults.any { searchResultArticle ->
-                            searchResultArticle.url == serverBreakingNewsArticle.url
                         }
                         NewsArticle(
                             title = serverBreakingNewsArticle.title,
@@ -50,14 +46,13 @@ class NewsRepository @Inject constructor(
                             urlToImage = serverBreakingNewsArticle.urlToImage,
                             isBreakingNews = true,
                             isBookmarked = bookmarked,
-                            isSearchResult = inSearchResultsCache
                         )
                     }
 
                 newsDb.withTransaction {
                     newsArticleDao.resetBreakingNews()
                     newsArticleDao.insertAll(breakingNewsArticles)
-                    newsArticleDao.deleteAllObsoleteArticles()
+                    // TODO: 17.01.2021 Delete obsolete articles?
                 }
             },
             shouldFetch = { cachedArticles ->
@@ -92,7 +87,7 @@ class NewsRepository @Inject constructor(
         Pager(
             config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
-            pagingSourceFactory = { newsArticleDatabase.newsArticleDao().getSearchResultsPaged() }
+            pagingSourceFactory = { newsArticleDatabase.searchQueryArticlesDao().getSearchResultsForQuery(query) }
         ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =
