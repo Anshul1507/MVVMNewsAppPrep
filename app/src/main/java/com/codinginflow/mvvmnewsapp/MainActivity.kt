@@ -12,8 +12,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    interface OnBottomNavigationFragmentSelected {
-        fun onBottomNavigationFragmentSelected()
+    interface OnBottomNavigationFragmentReselected {
+        fun onBottomNavigationFragmentReselected()
     }
 
     private lateinit var navController: NavController
@@ -95,11 +95,14 @@ class MainActivity : AppCompatActivity() {
                 return@setOnNavigationItemSelectedListener false
             }
 
-            if (fragment is OnBottomNavigationFragmentSelected) {
-                fragment.onBottomNavigationFragmentSelected()
+            if (currentFragment === fragment) {
+                @Suppress("USELESS_IS_CHECK")
+                if (fragment is OnBottomNavigationFragmentReselected) {
+                    fragment.onBottomNavigationFragmentReselected()
+                }
+            } else {
+                selectFragment(fragment)
             }
-
-            selectFragment(fragment)
 
             true
         }

@@ -19,7 +19,7 @@ import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.OnBottomNavigationFragmentSelected {
+class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: BookmarksViewModel by viewModels()
 
     private val binding by viewBinding(FragmentBookmarksBinding::bind)
@@ -76,7 +76,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
         binding.recyclerView.scrollToPosition(0)
     }
 
-    override fun onBottomNavigationFragmentSelected() {
+    override fun onBottomNavigationFragmentReselected() {
         scrollUp()
     }
 }

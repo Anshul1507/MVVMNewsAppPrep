@@ -17,7 +17,7 @@ import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity.OnBottomNavigationFragmentSelected {
+class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: SearchNewsViewModel by viewModels()
 
     private lateinit var newsPagingAdapter: NewsPagingAdapter
@@ -85,7 +85,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity
         binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
     }
 
-    override fun onBottomNavigationFragmentSelected() {
+    override fun onBottomNavigationFragmentReselected() {
         scrollUp()
     }
 }

@@ -16,13 +16,12 @@ import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
-    MainActivity.OnBottomNavigationFragmentSelected {
+    MainActivity.OnBottomNavigationFragmentReselected {
 
     private val viewModel: BreakingNewsViewModel by viewModels()
 
@@ -88,7 +87,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
         viewModel.onManualRefresh()
     }
 
-    override fun onBottomNavigationFragmentSelected() {
+    override fun onBottomNavigationFragmentReselected() {
         scrollUpAndRefresh()
     }
 }
