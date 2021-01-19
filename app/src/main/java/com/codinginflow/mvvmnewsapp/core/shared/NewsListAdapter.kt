@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.shared
+package com.codinginflow.mvvmnewsapp.core.shared
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

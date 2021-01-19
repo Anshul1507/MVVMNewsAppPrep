@@ -1,12 +1,12 @@
-package com.codinginflow.mvvmnewsapp.searchnews
+package com.codinginflow.mvvmnewsapp.features.searchnews
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.databinding.ItemNewsArticleBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsArticleComparator
-import com.codinginflow.mvvmnewsapp.shared.NewsViewHolder
+import com.codinginflow.mvvmnewsapp.core.shared.NewsArticleComparator
+import com.codinginflow.mvvmnewsapp.core.shared.NewsViewHolder
 
 class NewsPagingAdapter(
     private val onItemClick: (NewsArticle) -> Unit,

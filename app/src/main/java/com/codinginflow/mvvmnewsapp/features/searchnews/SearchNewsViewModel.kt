@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.searchnews
+package com.codinginflow.mvvmnewsapp.features.searchnews
 
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject

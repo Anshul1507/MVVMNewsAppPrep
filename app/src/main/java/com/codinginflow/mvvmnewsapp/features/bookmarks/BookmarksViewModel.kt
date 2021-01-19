@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.bookmarks
+package com.codinginflow.mvvmnewsapp.features.bookmarks
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*

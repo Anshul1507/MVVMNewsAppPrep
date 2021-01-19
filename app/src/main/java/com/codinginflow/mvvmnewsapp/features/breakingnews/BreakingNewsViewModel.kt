@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.breakingnews
+package com.codinginflow.mvvmnewsapp.features.breakingnews
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
@@ -13,12 +13,17 @@ class BreakingNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
-    private val refreshTrigger = MutableLiveData<Refresh>()
+    private val refreshTrigger = object: MutableLiveData<Refresh>() {
+        override fun onActive() {
+            Timber.d("Fragment onStart")
+            value = Refresh.NORMAL
+        }
+    }
 
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    /*val breakingNews = refreshTrigger.switchMap { refresh ->
+    val breakingNews = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
@@ -26,11 +31,6 @@ class BreakingNewsViewModel @ViewModelInject constructor(
                 showErrorMessage(t)
             }
         ).asLiveData()
-    }*/
-
-    fun onStart() {
-        Timber.d("Fragment onStart")
-        refreshTrigger.value = Refresh.NORMAL
     }
 
     fun onManualRefresh() {
@@ -46,8 +46,10 @@ class BreakingNewsViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun showErrorMessage(t: Throwable) = viewModelScope.launch {
-        eventChannel.send(Event.ShowErrorMessage(t))
+    private fun showErrorMessage(t: Throwable) {
+        viewModelScope.launch {
+            eventChannel.send(Event.ShowErrorMessage(t))
+        }
     }
 
     enum class Refresh {

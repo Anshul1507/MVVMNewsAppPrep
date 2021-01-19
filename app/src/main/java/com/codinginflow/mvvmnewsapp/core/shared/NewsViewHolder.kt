@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.shared
+package com.codinginflow.mvvmnewsapp.core.shared
 
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,11 +21,10 @@ class NewsViewHolder(
 
             textViewTitle.text = article.title
 
-            if (article.isBookmarked) {
-                imageViewBookmark.setImageResource(R.drawable.ic_bookmark_selected)
-            } else {
-                imageViewBookmark.setImageResource(R.drawable.ic_bookmark_unselected)
-            }
+            imageViewBookmark.setImageResource(when {
+                article.isBookmarked -> R.drawable.ic_bookmark_selected
+                else -> R.drawable.ic_bookmark_unselected
+            })
         }
     }
 
@@ -37,6 +36,7 @@ class NewsViewHolder(
                     onItemClick(position)
                 }
             }
+
             imageViewBookmark.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {

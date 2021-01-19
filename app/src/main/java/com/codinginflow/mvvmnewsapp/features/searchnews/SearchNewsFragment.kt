@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.searchnews
+package com.codinginflow.mvvmnewsapp.features.searchnews
 
 import android.content.Intent
 import android.net.Uri
@@ -10,23 +10,24 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
+import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
+class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity.OnBottomNavigationFragmentSelected {
     private val viewModel: SearchNewsViewModel by viewModels()
 
     private lateinit var newsPagingAdapter: NewsPagingAdapter
 
-    private var _binding: FragmentSearchNewsBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentSearchNewsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentSearchNewsBinding.bind(view)
+        val binding = binding
 
         newsPagingAdapter = NewsPagingAdapter(
             onItemClick = { article ->
@@ -84,8 +85,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
         binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onBottomNavigationFragmentSelected() {
+        scrollUp()
     }
 }

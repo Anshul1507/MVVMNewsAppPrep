@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.breakingnews
+package com.codinginflow.mvvmnewsapp.features.breakingnews
 
 import android.content.Intent
 import android.net.Uri
@@ -9,28 +9,31 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
 import com.codinginflow.mvvmnewsapp.util.Resource
+import com.codinginflow.mvvmnewsapp.util.showSnackbar
+import com.codinginflow.mvvmnewsapp.util.viewBinding
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import timber.log.Timber
 
 @AndroidEntryPoint
-class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
+class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
+    MainActivity.OnBottomNavigationFragmentSelected {
+
     private val viewModel: BreakingNewsViewModel by viewModels()
 
     private lateinit var newsAdapter: NewsListAdapter
 
-    private var _binding: FragmentBreakingNewsBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentBreakingNewsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentBreakingNewsBinding.bind(view)
+        val binding = binding
 
         newsAdapter = NewsListAdapter(
             onItemClick = { article ->
@@ -51,29 +54,28 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 itemAnimator?.changeDuration = 0
             }
 
-        /*    viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
-                swipeRefreshLayout.isRefreshing = result is Resource.Loading
-                recyclerView.isVisible = !result.data.isNullOrEmpty()
-                textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
-                textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
-
-                newsAdapter.submitList(result.data)
-            }
-*/
             swipeRefreshLayout.setOnRefreshListener {
                 viewModel.onManualRefresh()
             }
         }
 
+        viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
+            binding.swipeRefreshLayout.isRefreshing = result is Resource.Loading
+            binding.recyclerView.isVisible = !result.data.isNullOrEmpty()
+            binding.textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+            binding.textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
+
+            newsAdapter.submitList(result.data)
+        }
+
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.events.collect { event ->
                 when (event) {
-                    is BreakingNewsViewModel.Event.ShowErrorMessage ->
-                        Snackbar.make(
-                            requireView(),
-                            event.throwable.localizedMessage ?: "An unknown error occurred",
-                            Snackbar.LENGTH_LONG
-                        ).show()
+                    is BreakingNewsViewModel.Event.ShowErrorMessage -> {
+                        showSnackbar(
+                            event.throwable.localizedMessage ?: "An unknown error occurred"
+                        )
+                    }
                 }
             }
         }
@@ -86,13 +88,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         viewModel.onManualRefresh()
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewModel.onStart()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onBottomNavigationFragmentSelected() {
+        scrollUpAndRefresh()
     }
 }

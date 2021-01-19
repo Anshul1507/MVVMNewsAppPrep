@@ -4,14 +4,18 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
-import com.codinginflow.mvvmnewsapp.bookmarks.BookmarksFragment
-import com.codinginflow.mvvmnewsapp.breakingnews.BreakingNewsFragment
+import com.codinginflow.mvvmnewsapp.features.bookmarks.BookmarksFragment
+import com.codinginflow.mvvmnewsapp.features.breakingnews.BreakingNewsFragment
 import com.codinginflow.mvvmnewsapp.databinding.ActivityMainBinding
-import com.codinginflow.mvvmnewsapp.searchnews.SearchNewsFragment
+import com.codinginflow.mvvmnewsapp.features.searchnews.SearchNewsFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    interface OnBottomNavigationFragmentSelected {
+        fun onBottomNavigationFragmentSelected()
+    }
+
     private lateinit var navController: NavController
 
     private lateinit var breakingNewsFragment: BreakingNewsFragment
@@ -41,10 +45,11 @@ class MainActivity : AppCompatActivity() {
         }
         transaction.commit()
 
-        when (selectedFragment) {
-            is BreakingNewsFragment -> title = "Breaking News"
-            is SearchNewsFragment -> title = "Search News"
-            is BookmarksFragment -> title = "Bookmarks"
+        title = when (selectedFragment) {
+            is BreakingNewsFragment ->  "Breaking News"
+            is SearchNewsFragment -> "Search News"
+            is BookmarksFragment -> "Bookmarks"
+            else -> ""
         }
     }
 
@@ -78,39 +83,31 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val currentFragment = selectedFragment
-            when (item.itemId) {
-                R.id.breakingNewsFragment -> {
-                    if (currentFragment is BreakingNewsFragment) {
-                        currentFragment.scrollUpAndRefresh()
-                    } else {
-                        selectFragment(breakingNewsFragment)
-                    }
-                    true
-                }
-                R.id.searchNewsFragment -> {
-                    if (currentFragment is SearchNewsFragment) {
-                        currentFragment.scrollUp()
-                    } else {
-                        selectFragment(searchNewsFragment)
-                    }
-                    true
-                }
-                R.id.bookmarksFragment -> {
-                    if (currentFragment is BookmarksFragment) {
-                        currentFragment.scrollUp()
-                    } else {
-                        selectFragment(bookmarksFragment)
-                    }
-                    true
-                }
-                else -> false
+
+            val fragment = when (item.itemId) {
+                R.id.breakingNewsFragment -> breakingNewsFragment
+                R.id.searchNewsFragment -> searchNewsFragment
+                R.id.bookmarksFragment -> bookmarksFragment
+                else -> null
             }
+
+            if (fragment == null) {
+                return@setOnNavigationItemSelectedListener false
+            }
+
+            if (fragment is OnBottomNavigationFragmentSelected) {
+                fragment.onBottomNavigationFragmentSelected()
+            }
+
+            selectFragment(fragment)
+
+            true
         }
     }
 
     override fun onBackPressed() {
-        if (selectedFragment != breakingNewsFragment) {
-            selectFragment(breakingNewsFragment)
+        if (selectedIndex != 0) {
+            selectFragment(fragments[0])
         } else {
             super.onBackPressed()
         }

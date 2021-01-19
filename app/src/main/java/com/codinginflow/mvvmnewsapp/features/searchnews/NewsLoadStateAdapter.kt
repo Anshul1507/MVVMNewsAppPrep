@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.searchnews
+package com.codinginflow.mvvmnewsapp.features.searchnews
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
