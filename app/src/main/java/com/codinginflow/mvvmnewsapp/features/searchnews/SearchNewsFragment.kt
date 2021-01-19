@@ -7,28 +7,35 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.onQueryTextSubmit
+import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
-class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity.OnBottomNavigationFragmentReselected {
+class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
+    MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: SearchNewsViewModel by viewModels()
 
     private lateinit var newsPagingAdapter: NewsPagingAdapter
 
-    private val binding by viewBinding(FragmentSearchNewsBinding::bind)
+    private var _binding:  FragmentSearchNewsBinding? = null
+    private val binding get() = _binding!!
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
+        _binding = FragmentSearchNewsBinding.bind(view)
 
         newsPagingAdapter = NewsPagingAdapter(
             onItemClick = { article ->
@@ -55,6 +62,39 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
                 newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
             }
+
+            // TODO: 19.01.2021 This is not right yet. I have to play around until this is correct
+            newsPagingAdapter.addLoadStateListener { loadState ->
+                Timber.d("source = ${loadState.source}")
+                Timber.d("mediator = ${loadState.mediator}")
+                recyclerView.isVisible = loadState.source.refresh is LoadState.NotLoading
+                progressBar.isVisible = loadState.refresh is LoadState.Loading
+                buttonRetry.isVisible = loadState.refresh is LoadState.Error
+                textViewError.isVisible = loadState.refresh is LoadState.Error
+
+                val errorState = /*loadState.append as? LoadState.Error
+                    ?: loadState.prepend as? LoadState.Error
+                    ?:*/ loadState.refresh as? LoadState.Error
+
+                errorState?.let {
+                    val errorMessage = it.error.localizedMessage ?: "An unknown error occurred"
+                    textViewError.text = errorMessage
+//                    showSnackbar(errorMessage) // TODO: 19.01.2021 Ideally this would be a one-off event
+                }
+
+                if (loadState.refresh is LoadState.NotLoading &&
+                    newsPagingAdapter.itemCount < 1
+                ) {
+                    recyclerView.isVisible = false
+                    textViewEmpty.isVisible = true
+                } else {
+                    textViewEmpty.isVisible = false
+                }
+            }
+
+            buttonRetry.setOnClickListener {
+                newsPagingAdapter.retry()
+            }
         }
         setHasOptionsMenu(true)
     }
@@ -75,5 +115,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity
 
     override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }

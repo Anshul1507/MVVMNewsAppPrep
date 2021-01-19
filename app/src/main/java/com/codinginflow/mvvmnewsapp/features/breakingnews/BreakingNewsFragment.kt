@@ -13,6 +13,7 @@ import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
@@ -27,12 +28,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
 
     private lateinit var newsAdapter: NewsListAdapter
 
-    private val binding by viewBinding(FragmentBreakingNewsBinding::bind)
+    private var _binding:  FragmentBreakingNewsBinding? = null
+    private val binding get() = _binding!!
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
+        _binding = FragmentBreakingNewsBinding.bind(view)
 
         newsAdapter = NewsListAdapter(
             onItemClick = { article ->
@@ -50,10 +52,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
                 setHasFixedSize(true)
                 adapter = newsAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0
             }
 
             swipeRefreshLayout.setOnRefreshListener {
+                viewModel.onManualRefresh()
+            }
+
+            buttonRetry.setOnClickListener {
                 viewModel.onManualRefresh()
             }
         }
@@ -62,6 +67,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
             binding.swipeRefreshLayout.isRefreshing = result is Resource.Loading
             binding.recyclerView.isVisible = !result.data.isNullOrEmpty()
             binding.textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+            binding.buttonRetry.isVisible = result.throwable != null && result.data.isNullOrEmpty()
             binding.textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
 
             newsAdapter.submitList(result.data)
@@ -82,12 +88,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
         setHasOptionsMenu(true)
     }
 
-    fun scrollUpAndRefresh() {
+    override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0)
         viewModel.onManualRefresh()
     }
 
-    override fun onBottomNavigationFragmentReselected() {
-        scrollUpAndRefresh()
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }

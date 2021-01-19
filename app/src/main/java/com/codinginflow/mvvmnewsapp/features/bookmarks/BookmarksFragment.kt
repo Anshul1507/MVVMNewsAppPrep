@@ -16,19 +16,22 @@ import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
 import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.OnBottomNavigationFragmentReselected {
+class BookmarksFragment : Fragment(R.layout.fragment_bookmarks),
+    MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: BookmarksViewModel by viewModels()
 
-    private val binding by viewBinding(FragmentBookmarksBinding::bind)
+    private var _binding: FragmentBookmarksBinding? = null
+    private val binding get() = _binding!!
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
+        _binding = FragmentBookmarksBinding.bind(view)
 
         // TODO: 16.01.2021 Can we get rid of duplication?
         val bookmarksAdapter = NewsListAdapter(
@@ -78,5 +81,10 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
 
     override fun onBottomNavigationFragmentReselected() {
         scrollUp()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }
