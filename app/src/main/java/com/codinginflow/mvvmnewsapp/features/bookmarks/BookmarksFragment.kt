@@ -16,24 +16,21 @@ import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
 import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
-import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
-class BookmarksFragment : Fragment(R.layout.fragment_bookmarks),
-    MainActivity.OnBottomNavigationFragmentReselected {
+class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: BookmarksViewModel by viewModels()
 
-    private var _binding: FragmentBookmarksBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentBookmarksBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentBookmarksBinding.bind(view)
+        val binding = binding
 
-        // TODO: 16.01.2021 Can we get rid of duplication?
         val bookmarksAdapter = NewsListAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
@@ -50,7 +47,6 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks),
                 setHasFixedSize(true)
                 adapter = bookmarksAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.bookmarks.observe(viewLifecycleOwner) { bookmarks ->
@@ -82,10 +78,5 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks),
 
     override fun onBottomNavigationFragmentReselected() {
         scrollUp()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
     }
 }

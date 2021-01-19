@@ -29,13 +29,12 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
     private lateinit var newsPagingAdapter: NewsPagingAdapter
 
-    private var _binding:  FragmentSearchNewsBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentSearchNewsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentSearchNewsBinding.bind(view)
+        val binding = binding
 
         newsPagingAdapter = NewsPagingAdapter(
             onItemClick = { article ->
@@ -116,10 +115,5 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
     override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
     }
 }

@@ -13,6 +13,7 @@ import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
@@ -28,13 +29,12 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
 
     private lateinit var newsAdapter: NewsListAdapter
 
-    private var _binding:  FragmentBreakingNewsBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentBreakingNewsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentBreakingNewsBinding.bind(view)
+        val binding = binding
 
         newsAdapter = NewsListAdapter(
             onItemClick = { article ->
@@ -92,10 +92,5 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
     override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0)
         viewModel.onManualRefresh()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
     }
 }
