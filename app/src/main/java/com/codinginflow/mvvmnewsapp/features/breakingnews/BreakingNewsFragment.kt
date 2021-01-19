@@ -52,6 +52,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
                 setHasFixedSize(true)
                 adapter = newsAdapter
                 layoutManager = LinearLayoutManager(requireContext())
+                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             swipeRefreshLayout.setOnRefreshListener {

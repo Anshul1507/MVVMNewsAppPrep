@@ -50,6 +50,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks),
                 setHasFixedSize(true)
                 adapter = bookmarksAdapter
                 layoutManager = LinearLayoutManager(requireContext())
+                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.bookmarks.observe(viewLifecycleOwner) { bookmarks ->

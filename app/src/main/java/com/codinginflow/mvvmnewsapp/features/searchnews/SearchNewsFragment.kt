@@ -56,7 +56,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-//                itemAnimator?.changeDuration = 0
+                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
@@ -67,10 +67,9 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             newsPagingAdapter.addLoadStateListener { loadState ->
                 Timber.d("source = ${loadState.source}")
                 Timber.d("mediator = ${loadState.mediator}")
-                recyclerView.isVisible = loadState.source.refresh is LoadState.NotLoading
-                progressBar.isVisible = loadState.refresh is LoadState.Loading
-                buttonRetry.isVisible = loadState.refresh is LoadState.Error
-                textViewError.isVisible = loadState.refresh is LoadState.Error
+                progressBar.isVisible = loadState.refresh is LoadState.Loading && newsPagingAdapter.itemCount < 1
+                buttonRetry.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
+                textViewError.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
 
                 val errorState = /*loadState.append as? LoadState.Error
                     ?: loadState.prepend as? LoadState.Error
@@ -83,12 +82,14 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 }
 
                 if (loadState.refresh is LoadState.NotLoading &&
+                    loadState.append.endOfPaginationReached &&
                     newsPagingAdapter.itemCount < 1
                 ) {
                     recyclerView.isVisible = false
                     textViewEmpty.isVisible = true
                 } else {
                     textViewEmpty.isVisible = false
+                    recyclerView.isVisible = true
                 }
             }
 
