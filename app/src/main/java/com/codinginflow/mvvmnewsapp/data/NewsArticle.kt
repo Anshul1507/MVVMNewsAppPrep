@@ -12,7 +12,21 @@ data class NewsArticle(
     @PrimaryKey val url: String,
     val urlToImage: String?,
     val publishedAt: Date,
-    val isBreakingNews: Boolean,
     val isBookmarked: Boolean,
     val updatedAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(tableName = "search_results", primaryKeys = ["searchQuery", "articleUrl"])
+// Foreign key on articleUrl deletes articles out of previous search queries on REPLACE
+data class SearchResult(
+    val searchQuery: String,
+    val articleUrl: String,
+    val prevPageKey: Int?,
+    val nextPageKey: Int?,
+    val queryPosition: Int
+)
+
+@Entity(tableName = "breaking_news")
+data class BreakingNews(
+    @PrimaryKey val articleUrl: String
 )

@@ -19,7 +19,6 @@ class SearchNewsRemoteMediator(
 ) : RemoteMediator<Int, NewsArticle>() {
 
     private val newsArticleDao = newsDb.newsArticleDao()
-    private val searchQueryDao = newsDb.searchQueryDao()
 
     override suspend fun load(
         loadType: LoadType,
@@ -29,7 +28,7 @@ class SearchNewsRemoteMediator(
             LoadType.REFRESH -> NEWS_STARTING_PAGE_INDEX
             LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
             LoadType.APPEND -> {
-                val nextKey = searchQueryDao.getLastCachedSearchResult(searchQuery)?.nextPageKey
+                val nextKey = newsArticleDao.getLastCachedSearchResult(searchQuery)?.nextPageKey
                     ?: return MediatorResult.Success(endOfPaginationReached = true)
                 nextKey
             }
@@ -42,33 +41,28 @@ class SearchNewsRemoteMediator(
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
-            val cachedBreakingNewsArticles = newsArticleDao.getCachedBreakingNews().first()
 
             val searchResultArticles = serverSearchResults.map { serverSearchResultArticle ->
                 val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
                     bookmarkedArticle.url == serverSearchResultArticle.url
                 }
-                val inBreakingNewsCache =
-                    cachedBreakingNewsArticles.any { breakingNewsArticle ->
-                        breakingNewsArticle.url == serverSearchResultArticle.url
-                    }
+
                 NewsArticle(
                     title = serverSearchResultArticle.title,
                     url = serverSearchResultArticle.url,
                     urlToImage = serverSearchResultArticle.urlToImage,
                     publishedAt = serverSearchResultArticle.publishedAt,
-                    isBreakingNews = inBreakingNewsCache,
                     isBookmarked = bookmarked,
                 )
             }
 
             newsDb.withTransaction {
                 if (loadType == LoadType.REFRESH) {
-                    searchQueryDao.clearSearchResultsForQuery(searchQuery)
+                    newsArticleDao.clearSearchResultsForQuery(searchQuery)
                 }
 
                 val lastResultPosition =
-                    searchQueryDao.getLastCachedSearchResult(searchQuery)?.queryPosition ?: 0
+                    newsArticleDao.getLastCachedSearchResult(searchQuery)?.queryPosition ?: 0
                 var position = lastResultPosition + 1
 
                 val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
@@ -76,8 +70,8 @@ class SearchNewsRemoteMediator(
                 val searchResults = serverSearchResults.map { article ->
                     SearchResult(searchQuery, article.url, prevKey, nextKey, position++)
                 }
-                newsDb.newsArticleDao().insertAll(searchResultArticles)
-                searchQueryDao.insertAll(searchResults)
+                newsArticleDao.insertArticles(searchResultArticles)
+                newsArticleDao.insertSearchResults(searchResults)
             }
             MediatorResult.Success(endOfPaginationReached)
         } catch (exception: IOException) {

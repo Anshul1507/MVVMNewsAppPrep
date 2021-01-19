@@ -25,7 +25,7 @@ class NewsRepository @Inject constructor(
     fun getBreakingNews(forceRefresh: Boolean, onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
-                newsArticleDao.getCachedBreakingNews()
+                newsArticleDao.getAllBreakingNews()
             },
             fetch = {
                 val response = newsApi.getTopHeadlines()
@@ -45,14 +45,18 @@ class NewsRepository @Inject constructor(
                             url = serverBreakingNewsArticle.url,
                             urlToImage = serverBreakingNewsArticle.urlToImage,
                             publishedAt = serverBreakingNewsArticle.publishedAt,
-                            isBreakingNews = true,
                             isBookmarked = bookmarked,
                         )
                     }
 
                 newsDb.withTransaction {
-                    newsArticleDao.resetBreakingNews()
-                    newsArticleDao.insertAll(breakingNewsArticles)
+                    val breakingNews = breakingNewsArticles.map { article ->
+                        BreakingNews(article.url)
+                    }
+
+                    newsArticleDao.deleteAllBreakingNews()
+                    newsArticleDao.insertArticles(breakingNewsArticles)
+                    newsArticleDao.insertBreakingNews(breakingNews)
                 }
             },
             shouldFetch = { cachedArticles ->
@@ -87,7 +91,7 @@ class NewsRepository @Inject constructor(
         Pager(
             config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
-            pagingSourceFactory = { newsArticleDatabase.searchQueryDao().getSearchResultsPaged(query) }
+            pagingSourceFactory = { newsArticleDao.getSearchResultsPaged(query) }
         ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =

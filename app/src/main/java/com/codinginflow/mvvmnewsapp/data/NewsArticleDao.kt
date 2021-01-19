@@ -7,14 +7,26 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NewsArticleDao {
 
-    @Query("SELECT * FROM news_articles WHERE isBreakingNews = 1")
-    fun getCachedBreakingNews(): Flow<List<NewsArticle>>
+    @Query("SELECT * FROM breaking_news INNER JOIN news_articles ON articleUrl = url")
+    fun getAllBreakingNews(): Flow<List<NewsArticle>>
+
+    @Query("SELECT * FROM search_results INNER JOIN news_articles ON articleUrl = url WHERE searchQuery = :query ORDER BY queryPosition")
+    fun getSearchResultsPaged(query: String): PagingSource<Int, NewsArticle>
 
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
 
+    @Query("SELECT * FROM search_results WHERE searchQuery = :query ORDER BY queryPosition DESC LIMIT 1")
+    suspend fun getLastCachedSearchResult(query: String): SearchResult?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(articles: List<NewsArticle>) : LongArray
+    suspend fun insertArticles(articles: List<NewsArticle>) : LongArray
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBreakingNews(breakingNews: List<BreakingNews>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSearchResults(searchResults: List<SearchResult>)
 
     @Update
     suspend fun update(article: NewsArticle)
@@ -25,6 +37,9 @@ interface NewsArticleDao {
     @Query("UPDATE news_articles SET isBookmarked = 0")
     suspend fun resetBookmarks()
 
-    @Query("UPDATE news_articles SET isBreakingNews = 0")
-    suspend fun resetBreakingNews()
+    @Query("DELETE FROM search_results WHERE searchQuery = :query")
+    suspend fun clearSearchResultsForQuery(query: String)
+
+    @Query("DELETE FROM breaking_news")
+    suspend fun deleteAllBreakingNews()
 }
