@@ -25,7 +25,7 @@ class NewsRepository @Inject constructor(
     fun getBreakingNews(forceRefresh: Boolean, onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
-                newsArticleDao.getAllBreakingNews()
+                newsArticleDao.getAllBreakingNewsArticles()
             },
             fetch = {
                 val response = newsApi.getTopHeadlines()
@@ -44,7 +44,6 @@ class NewsRepository @Inject constructor(
                             title = serverBreakingNewsArticle.title,
                             url = serverBreakingNewsArticle.url,
                             urlToImage = serverBreakingNewsArticle.urlToImage,
-                            publishedAt = serverBreakingNewsArticle.publishedAt,
                             isBookmarked = bookmarked,
                         )
                     }
@@ -91,7 +90,7 @@ class NewsRepository @Inject constructor(
         Pager(
             config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
-            pagingSourceFactory = { newsArticleDao.getSearchResultsPaged(query) }
+            pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }
         ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =
@@ -102,6 +101,6 @@ class NewsRepository @Inject constructor(
     }
 
     suspend fun deleteAllBookmarks() {
-        newsArticleDao.resetBookmarks()
+        newsArticleDao.deleteAllBookmarks()
     }
 }

@@ -51,7 +51,6 @@ class SearchNewsRemoteMediator(
                     title = serverSearchResultArticle.title,
                     url = serverSearchResultArticle.url,
                     urlToImage = serverSearchResultArticle.urlToImage,
-                    publishedAt = serverSearchResultArticle.publishedAt,
                     isBookmarked = bookmarked,
                 )
             }

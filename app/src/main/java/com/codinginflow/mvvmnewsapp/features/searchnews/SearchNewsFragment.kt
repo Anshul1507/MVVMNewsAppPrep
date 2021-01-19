@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
+import com.codinginflow.mvvmnewsapp.util.onQueryTextSubmit
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -48,7 +49,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0
+//                itemAnimator?.changeDuration = 0
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
@@ -66,26 +67,13 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news), MainActivity
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as SearchView
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (!query.isNullOrBlank()) {
-                    viewModel.searchArticles(query)
-                    searchView.clearFocus()
-                }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-        })
-    }
-
-    fun scrollUp() {
-        binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
+        searchView.onQueryTextSubmit { query ->
+            viewModel.searchArticles(query)
+            searchView.clearFocus()
+        }
     }
 
     override fun onBottomNavigationFragmentReselected() {
-        scrollUp()
+        binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
     }
 }

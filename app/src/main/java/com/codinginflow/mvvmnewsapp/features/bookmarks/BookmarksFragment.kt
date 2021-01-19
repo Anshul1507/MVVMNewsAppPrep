@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -46,7 +47,6 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
                 setHasFixedSize(true)
                 adapter = bookmarksAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0
             }
 
             viewModel.bookmarks.observe(viewLifecycleOwner) { bookmarks ->

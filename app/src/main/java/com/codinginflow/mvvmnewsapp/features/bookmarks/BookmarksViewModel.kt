@@ -9,6 +9,9 @@ import kotlinx.coroutines.launch
 class BookmarksViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
+
+    val bookmarks = repository.getAllBookmarkedArticles().asLiveData()
+
     fun onBookmarkClick(article: NewsArticle) {
         val currentlyBookmarked = article.isBookmarked
         val updatedArticle = article.copy(isBookmarked = !currentlyBookmarked)
@@ -22,6 +25,4 @@ class BookmarksViewModel @ViewModelInject constructor(
             repository.deleteAllBookmarks()
         }
     }
-
-    val bookmarks = repository.getAllBookmarkedArticles().asLiveData()
 }

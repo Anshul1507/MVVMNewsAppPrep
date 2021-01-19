@@ -22,6 +22,6 @@ interface NewsApi {
 
     @Headers("X-Api-Key: $API_KEY")
     // TODO: 15.01.2021 Small page size for testing purposes
-    @GET("top-headlines?country=us&pageSize=5")
+    @GET("top-headlines?country=us&pageSize=100")
     suspend fun getTopHeadlines(): NewsResponse
 }

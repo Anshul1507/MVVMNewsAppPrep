@@ -11,7 +11,6 @@ data class NewsArticle(
     val title: String,
     @PrimaryKey val url: String,
     val urlToImage: String?,
-    val publishedAt: Date,
     val isBookmarked: Boolean,
     val updatedAt: Long = System.currentTimeMillis(),
 )

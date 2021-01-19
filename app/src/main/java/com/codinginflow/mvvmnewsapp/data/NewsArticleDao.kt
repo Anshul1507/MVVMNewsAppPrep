@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 interface NewsArticleDao {
 
     @Query("SELECT * FROM breaking_news INNER JOIN news_articles ON articleUrl = url")
-    fun getAllBreakingNews(): Flow<List<NewsArticle>>
+    fun getAllBreakingNewsArticles(): Flow<List<NewsArticle>>
 
     @Query("SELECT * FROM search_results INNER JOIN news_articles ON articleUrl = url WHERE searchQuery = :query ORDER BY queryPosition")
-    fun getSearchResultsPaged(query: String): PagingSource<Int, NewsArticle>
+    fun getSearchResultArticlesPaged(query: String): PagingSource<Int, NewsArticle>
 
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
@@ -35,7 +35,7 @@ interface NewsArticleDao {
     suspend fun update(articles: List<NewsArticle>)
 
     @Query("UPDATE news_articles SET isBookmarked = 0")
-    suspend fun resetBookmarks()
+    suspend fun deleteAllBookmarks()
 
     @Query("DELETE FROM search_results WHERE searchQuery = :query")
     suspend fun clearSearchResultsForQuery(query: String)
