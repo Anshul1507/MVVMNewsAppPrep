@@ -90,9 +90,9 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 buttonRetry.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
                 textViewError.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
 
-                val errorState = /*loadState.append as? LoadState.Error
+                val errorState = loadState.append as? LoadState.Error
                     ?: loadState.prepend as? LoadState.Error
-                    ?:*/ loadState.refresh as? LoadState.Error
+                    ?: loadState.refresh as? LoadState.Error
 
                 errorState?.let {
                     val errorMessage = it.error.localizedMessage ?: "An unknown error occurred"
