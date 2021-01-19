@@ -51,7 +51,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 itemAnimator?.changeDuration = 0
             }
 
-            viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
+        /*    viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
                 swipeRefreshLayout.isRefreshing = result is Resource.Loading
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
                 textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
@@ -59,7 +59,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
                 newsAdapter.submitList(result.data)
             }
-
+*/
             swipeRefreshLayout.setOnRefreshListener {
                 viewModel.onManualRefresh()
             }

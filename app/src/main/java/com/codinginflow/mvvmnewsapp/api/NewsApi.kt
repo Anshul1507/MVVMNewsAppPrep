@@ -17,7 +17,7 @@ interface NewsApi {
     suspend fun searchNews(
         @Query("q") query: String,
         @Query("page") page: Int,
-        @Query("pageSize") pageSize: Int
+        @Query("pageSize") pageSize: Int,
     ): NewsResponse
 
     @Headers("X-Api-Key: $API_KEY")

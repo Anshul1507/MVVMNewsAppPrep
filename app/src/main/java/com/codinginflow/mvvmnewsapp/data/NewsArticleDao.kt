@@ -14,7 +14,7 @@ interface NewsArticleDao {
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(articles: List<NewsArticle>)
+    suspend fun insertAll(articles: List<NewsArticle>) : LongArray
 
     @Update
     suspend fun update(article: NewsArticle)

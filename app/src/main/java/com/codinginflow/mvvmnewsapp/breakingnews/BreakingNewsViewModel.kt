@@ -18,7 +18,7 @@ class BreakingNewsViewModel @ViewModelInject constructor(
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    val breakingNews = refreshTrigger.switchMap { refresh ->
+    /*val breakingNews = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
@@ -26,7 +26,7 @@ class BreakingNewsViewModel @ViewModelInject constructor(
                 showErrorMessage(t)
             }
         ).asLiveData()
-    }
+    }*/
 
     fun onStart() {
         Timber.d("Fragment onStart")

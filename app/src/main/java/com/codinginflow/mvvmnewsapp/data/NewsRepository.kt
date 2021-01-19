@@ -44,6 +44,7 @@ class NewsRepository @Inject constructor(
                             title = serverBreakingNewsArticle.title,
                             url = serverBreakingNewsArticle.url,
                             urlToImage = serverBreakingNewsArticle.urlToImage,
+                            publishedAt = serverBreakingNewsArticle.publishedAt,
                             isBreakingNews = true,
                             isBookmarked = bookmarked,
                         )
@@ -52,7 +53,6 @@ class NewsRepository @Inject constructor(
                 newsDb.withTransaction {
                     newsArticleDao.resetBreakingNews()
                     newsArticleDao.insertAll(breakingNewsArticles)
-                    // TODO: 17.01.2021 Delete obsolete articles?
                 }
             },
             shouldFetch = { cachedArticles ->
@@ -87,7 +87,7 @@ class NewsRepository @Inject constructor(
         Pager(
             config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
-            pagingSourceFactory = { newsArticleDatabase.searchQueryArticlesDao().getSearchResultsForQuery(query) }
+            pagingSourceFactory = { newsArticleDatabase.searchQueryDao().getSearchResultsPaged(query) }
         ).flow
 
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>> =
