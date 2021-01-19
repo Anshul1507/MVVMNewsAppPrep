@@ -34,8 +34,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
-
         newsAdapter = NewsListAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
@@ -62,16 +60,17 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
             buttonRetry.setOnClickListener {
                 viewModel.onManualRefresh()
             }
-        }
 
-        viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
-            binding.swipeRefreshLayout.isRefreshing = result is Resource.Loading
-            binding.recyclerView.isVisible = !result.data.isNullOrEmpty()
-            binding.textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
-            binding.buttonRetry.isVisible = result.throwable != null && result.data.isNullOrEmpty()
-            binding.textViewError.text = result.throwable?.localizedMessage ?: "An unknown error occurred"
+            viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
+                swipeRefreshLayout.isRefreshing = result is Resource.Loading
+                recyclerView.isVisible = !result.data.isNullOrEmpty()
+                textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+                buttonRetry.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+                textViewError.text =
+                    result.throwable?.localizedMessage ?: "An unknown error occurred"
 
-            newsAdapter.submitList(result.data)
+                newsAdapter.submitList(result.data)
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

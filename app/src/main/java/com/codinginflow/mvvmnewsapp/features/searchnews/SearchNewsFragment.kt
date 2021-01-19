@@ -34,8 +34,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
-
         newsPagingAdapter = NewsPagingAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
@@ -64,8 +62,30 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
             // TODO: 19.01.2021 This is not right yet. I have to play around until this is correct
             newsPagingAdapter.addLoadStateListener { loadState ->
-                Timber.d("source = ${loadState.source}")
-                Timber.d("mediator = ${loadState.mediator}")
+                when (loadState.mediator?.refresh) {
+                    is LoadState.NotLoading -> {
+                        Timber.d("mediator NotLoading")
+                    }
+                    is LoadState.Loading -> {
+                        Timber.d("mediator Loading")
+                    }
+                    is LoadState.Error -> {
+                        Timber.d("mediator Error")
+                    }
+                }
+
+                when (loadState.source.refresh) {
+                    is LoadState.NotLoading -> {
+                        Timber.d("source NotLoading")
+                    }
+                    is LoadState.Loading -> {
+                        Timber.d("source Loading")
+                    }
+                    is LoadState.Error -> {
+                        Timber.d("source Error")
+                    }
+                }
+
                 progressBar.isVisible = loadState.refresh is LoadState.Loading && newsPagingAdapter.itemCount < 1
                 buttonRetry.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
                 textViewError.isVisible = loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
@@ -77,11 +97,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 errorState?.let {
                     val errorMessage = it.error.localizedMessage ?: "An unknown error occurred"
                     textViewError.text = errorMessage
-//                    showSnackbar(errorMessage) // TODO: 19.01.2021 Ideally this would be a one-off event
+                    showSnackbar(errorMessage) // TODO: 19.01.2021 Ideally this would be a one-off event
                 }
 
                 if (loadState.refresh is LoadState.NotLoading &&
-                    loadState.append.endOfPaginationReached &&
                     newsPagingAdapter.itemCount < 1
                 ) {
                     recyclerView.isVisible = false

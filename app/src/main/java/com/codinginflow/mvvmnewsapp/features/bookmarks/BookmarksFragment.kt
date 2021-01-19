@@ -29,8 +29,6 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = binding
-
         val bookmarksAdapter = NewsListAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
@@ -72,11 +70,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
             else -> super.onOptionsItemSelected(item)
         }
 
-    fun scrollUp() {
-        binding.recyclerView.scrollToPosition(0)
-    }
-
     override fun onBottomNavigationFragmentReselected() {
-        scrollUp()
+        binding.recyclerView.scrollToPosition(0)
     }
 }
