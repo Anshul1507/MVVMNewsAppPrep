@@ -164,6 +164,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
             viewLifecycleOwner.lifecycleScope.launchWhenStarted {
                 newsPagingAdapter.loadStateFlow.distinctUntilChangedBy {
+                    // TODO: 20.01.2021 We don't listen for append errors but I think that's fine
+                    //  because they are already displayed in the footer
                     it.mediator?.refresh // avoid showing the same error when we click a bookmark
                 }.collect { loadState ->
                     val errorState = loadState.mediator?.refresh as? LoadState.Error

@@ -13,11 +13,10 @@ class BreakingNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
-    private val refreshTrigger = object: MutableLiveData<Refresh>() {
-        override fun onActive() {
-            Timber.d("Fragment onStart")
-            value = Refresh.NORMAL
-        }
+    private val refreshTrigger = MutableLiveData<Refresh>()
+
+    init {
+        refreshTrigger.value = Refresh.NORMAL
     }
 
     private val eventChannel = Channel<Event>()
