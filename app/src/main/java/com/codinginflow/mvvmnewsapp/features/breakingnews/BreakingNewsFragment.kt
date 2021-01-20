@@ -53,14 +53,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
                 itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
-            swipeRefreshLayout.setOnRefreshListener {
-                viewModel.onManualRefresh()
-            }
-
-            buttonRetry.setOnClickListener {
-                viewModel.onManualRefresh()
-            }
-
             viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
                 swipeRefreshLayout.isRefreshing = result is Resource.Loading
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
@@ -70,6 +62,14 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
                     result.throwable?.localizedMessage ?: "An unknown error occurred"
 
                 newsAdapter.submitList(result.data)
+            }
+
+            swipeRefreshLayout.setOnRefreshListener {
+                viewModel.onManualRefresh()
+            }
+
+            buttonRetry.setOnClickListener {
+                viewModel.onManualRefresh()
             }
         }
 
@@ -90,6 +90,5 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
 
     override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0)
-        viewModel.onManualRefresh()
     }
 }

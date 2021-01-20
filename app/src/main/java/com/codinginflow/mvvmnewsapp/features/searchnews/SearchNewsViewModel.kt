@@ -23,6 +23,11 @@ class SearchNewsViewModel @ViewModelInject constructor(
         currentQuery.value = query
     }
 
+    fun onManualRefresh() {
+        // TODO: 20.01.2021 Let Zhuinden check this
+        currentQuery.value = currentQuery.value
+    }
+
     fun onBookmarkClick(article: NewsArticle) {
         val currentlyBookmarked = article.isBookmarked
         val updatedArticle = article.copy(isBookmarked = !currentlyBookmarked)
