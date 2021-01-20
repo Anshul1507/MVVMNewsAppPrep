@@ -18,10 +18,8 @@ import com.codinginflow.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import timber.log.Timber
 
 @AndroidEntryPoint
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
@@ -56,28 +54,12 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
             }
 
             viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
-                Timber.d("observe with $result")
                 swipeRefreshLayout.isRefreshing = result is Resource.Loading
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
-
-                // I prefer a snackbar over these views because they will only be visible until we have cached data
-//                textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
-//                buttonRetry.isVisible = result.throwable != null && result.data.isNullOrEmpty()
-/*                textViewError.text =
-                    result.throwable?.localizedMessage ?: "An unknown error occurred"*/
-
-                if (result is Resource.Error) {
-                    Snackbar.make(
-                        requireView(),
-                        result.throwable?.localizedMessage ?: "An unknown error occurred",
-                        Snackbar.LENGTH_INDEFINITE
-                    ).apply {
-                        setAction("Retry") {
-                            viewModel.onManualRefresh()
-                        }
-                        show()
-                    }
-                }
+                textViewError.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+                buttonRetry.isVisible = result.throwable != null && result.data.isNullOrEmpty()
+                textViewError.text =
+                    result.throwable?.localizedMessage ?: "An unknown error occurred"
 
                 newsAdapter.submitList(result.data)
             }
@@ -86,16 +68,18 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
                 viewModel.onManualRefresh()
             }
 
-          /*  buttonRetry.setOnClickListener {
+            buttonRetry.setOnClickListener {
                 viewModel.onManualRefresh()
-            }*/
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.events.collect { event ->
                 when (event) {
                     is BreakingNewsViewModel.Event.ShowErrorMessage -> {
-
+                        showSnackbar(
+                            event.throwable.localizedMessage ?: "An unknown error occurred"
+                        )
                     }
                 }
             }

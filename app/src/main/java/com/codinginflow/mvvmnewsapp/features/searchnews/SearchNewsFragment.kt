@@ -163,11 +163,11 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             }
 
             viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                newsPagingAdapter.loadStateFlow.distinctUntilChangedBy {
-                    // TODO: 20.01.2021 We don't listen for append errors but I think that's fine
-                    //  because they are already displayed in the footer
-                    it.mediator?.refresh // avoid showing the same error when we click a bookmark
-                }.collect { loadState ->
+                newsPagingAdapter.loadStateFlow.collect { loadState ->
+                    if (loadState.mediator?.refresh is LoadState.Loading) {
+                        viewModel.refreshInProgress = true
+                    }
+
                     val errorState = loadState.mediator?.refresh as? LoadState.Error
                     /*  ?: loadState.append as? LoadState.Error
                       ?: loadState.prepend as? LoadState.Error*/
@@ -175,7 +175,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     errorState?.let {
                         val errorMessage = it.error.localizedMessage ?: "An unknown error occurred"
                         textViewError.text = errorMessage
-                            showSnackbar(errorMessage) // TODO: 19.01.2021 Ideally this would be a one-off event
+                        if (viewModel.refreshInProgress) {
+                            showSnackbar(errorMessage)
+                            viewModel.refreshInProgress = false
+                        }
                     }
                 }
             }

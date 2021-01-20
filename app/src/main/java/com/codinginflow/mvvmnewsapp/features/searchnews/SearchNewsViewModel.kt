@@ -19,6 +19,8 @@ class SearchNewsViewModel @ViewModelInject constructor(
         repository.getSearchResults(query).asLiveData().cachedIn(viewModelScope)
     }
 
+    var refreshInProgress = false
+
     fun searchArticles(query: String) {
         currentQuery.value = query
     }
