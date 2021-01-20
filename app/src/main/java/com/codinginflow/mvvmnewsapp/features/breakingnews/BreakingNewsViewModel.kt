@@ -5,36 +5,37 @@ import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class BreakingNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
-
-    private val refreshTrigger = MutableLiveData<Refresh>()
-
-    init {
-        refreshTrigger.value = Refresh.NORMAL
+    private val refreshTrigger = MutableSharedFlow<Refresh.NORMAL>(1).apply {
+        tryEmit(Refresh.NORMAL)
     }
+
+    private val forceRefresh = MutableSharedFlow<Refresh.FORCE>()
 
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    val breakingNews = refreshTrigger.switchMap { refresh ->
+    val breakingNews = merge(refreshTrigger, forceRefresh).flatMapLatest { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
             onFetchFailed = { t ->
                 showErrorMessage(t)
             }
-        ).asLiveData()
-    }
+        )
+    }.asLiveData()
 
     fun onManualRefresh() {
         Timber.d("onManualRefresh()")
-        refreshTrigger.value = Refresh.FORCE
+        viewModelScope.launch {
+            forceRefresh.emit(Refresh.FORCE)
+        }
     }
 
     fun onBookmarkClick(article: NewsArticle) {
@@ -51,8 +52,9 @@ class BreakingNewsViewModel @ViewModelInject constructor(
         }
     }
 
-    enum class Refresh {
-        FORCE, NORMAL
+    sealed class Refresh {
+        object FORCE: Refresh()
+        object NORMAL: Refresh()
     }
 
     sealed class Event {
