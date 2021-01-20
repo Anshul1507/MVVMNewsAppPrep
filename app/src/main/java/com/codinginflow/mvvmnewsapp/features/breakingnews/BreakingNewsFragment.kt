@@ -66,10 +66,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news),
 /*                textViewError.text =
                     result.throwable?.localizedMessage ?: "An unknown error occurred"*/
 
-                (result as? Resource.Error)?.let {
+                if (result is Resource.Error) {
                     Snackbar.make(
                         requireView(),
-                        it.throwable?.localizedMessage ?: "An unknown error occurred",
+                        result.throwable?.localizedMessage ?: "An unknown error occurred",
                         Snackbar.LENGTH_INDEFINITE
                     ).apply {
                         setAction("Retry") {
