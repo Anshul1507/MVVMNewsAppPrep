@@ -22,8 +22,6 @@ import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -64,9 +62,12 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
             }
 
-            // TODO: 20.01.2021 Disable swipe refresh if we don't have a query running yet
             swipeRefreshLayout.setOnRefreshListener {
-                newsPagingAdapter.refresh()
+                if (viewModel.hasCurrentQuery) {
+                    newsPagingAdapter.refresh()
+                } else {
+                    swipeRefreshLayout.isRefreshing = false
+                }
             }
 
             // TODO: 19.01.2021 This is not right yet. I have to play around until this is correct
@@ -143,6 +144,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     }
                 }
 
+                recyclerView.isVisible = newsPagingAdapter.itemCount > 0
                 swipeRefreshLayout.isRefreshing = loadState.refresh is LoadState.Loading
                 buttonRetry.isVisible =
                     loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
@@ -151,16 +153,9 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
 
 
-                if (loadState.source.refresh is LoadState.NotLoading &&
-                    loadState.append.endOfPaginationReached &&
-                    newsPagingAdapter.itemCount < 1
-                ) {
-                    recyclerView.isVisible = false
-                    textViewEmpty.isVisible = true
-                } else {
-                    textViewEmpty.isVisible = false
-                    recyclerView.isVisible = true
-                }
+                textViewEmpty.isVisible = loadState.refresh is LoadState.NotLoading &&
+                        loadState.refresh !is LoadState.Error &&
+                        newsPagingAdapter.itemCount < 1
             }
 
             viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -192,8 +187,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
         inflater.inflate(R.menu.menu_search_news, menu)
 
         val searchItem = menu.findItem(R.id.action_search)

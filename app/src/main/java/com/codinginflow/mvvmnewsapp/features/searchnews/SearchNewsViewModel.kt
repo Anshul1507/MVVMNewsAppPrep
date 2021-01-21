@@ -3,6 +3,7 @@ package com.codinginflow.mvvmnewsapp.features.searchnews
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
+import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
@@ -18,6 +19,8 @@ class SearchNewsViewModel @ViewModelInject constructor(
     val newsArticles = currentQuery.switchMap { query ->
         repository.getSearchResults(query).asLiveData().cachedIn(viewModelScope)
     }
+
+    val hasCurrentQuery get() = currentQuery.value != null
 
     var refreshInProgress = false
 

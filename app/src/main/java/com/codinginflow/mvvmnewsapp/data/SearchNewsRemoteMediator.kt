@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
+import java.lang.Exception
 
 private const val NEWS_STARTING_PAGE_INDEX = 1
 
@@ -44,16 +45,18 @@ class SearchNewsRemoteMediator(
                 Timber.d("Start APPEND")
                 val nextPageKey = getNextPageKeyForLastItem(state)
                 // TODO: 21.01.2021 The previousPage key should never be null but this should be fine (test with "asdasd")
-                    ?: return MediatorResult.Success(endOfPaginationReached = true) // TODO: 21.01.2021 I skipped the exceptions from the codelabs but I'm not yet sure about that
+                    ?: return MediatorResult.Success(endOfPaginationReached = true)
                 Timber.d("return APPEND with nextPageKey = $nextPageKey")
                 nextPageKey
             }
         }
 
         return try {
+            Timber.d("start of try-block")
             delay(1000)
             val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
             val serverSearchResults = apiResponse.articles
+            Timber.d("articles fetched = ${apiResponse.articles.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
@@ -76,6 +79,7 @@ class SearchNewsRemoteMediator(
                     newsArticleDao.clearSearchResultsForQuery(searchQuery)
                 }
 
+                // TODO: 21.01.2021 This will not work for prepend
                 val lastResultPosition = getQueryPositionForLastItem(state) ?: 0
                 var position = lastResultPosition + 1
 
@@ -86,11 +90,15 @@ class SearchNewsRemoteMediator(
                 }
                 newsArticleDao.insertArticles(searchResultArticles)
                 newsArticleDao.insertSearchResults(searchResults)
+                // TODO: 21.01.2021 Delete old outdated articles?
             }
             MediatorResult.Success(endOfPaginationReached)
         } catch (exception: IOException) {
             MediatorResult.Error(exception)
         } catch (exception: HttpException) {
+            MediatorResult.Error(exception)
+        } catch (exception: Throwable) {
+            Timber.d("caught $exception")
             MediatorResult.Error(exception)
         }
     }
