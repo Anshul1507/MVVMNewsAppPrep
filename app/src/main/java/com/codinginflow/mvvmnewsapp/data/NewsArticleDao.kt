@@ -16,8 +16,8 @@ interface NewsArticleDao {
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
 
-    @Query("SELECT * FROM search_results WHERE searchQuery = :query ORDER BY queryPosition DESC LIMIT 1")
-    suspend fun getLastCachedSearchResult(query: String): SearchResult?
+    @Query("SELECT * FROM search_results WHERE articleUrl = :articleUrl")
+    suspend fun getSearchResult(articleUrl: String): SearchResult
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArticles(articles: List<NewsArticle>) : LongArray

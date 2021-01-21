@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
@@ -65,7 +66,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
             // TODO: 20.01.2021 Disable swipe refresh if we don't have a query running yet
             swipeRefreshLayout.setOnRefreshListener {
-                viewModel.onManualRefresh()
+                newsPagingAdapter.refresh()
             }
 
             // TODO: 19.01.2021 This is not right yet. I have to play around until this is correct
@@ -201,6 +202,16 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         searchView.onQueryTextSubmit { query ->
             viewModel.searchArticles(query)
             searchView.clearFocus()
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.refresh -> {
+                newsPagingAdapter.refresh()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
