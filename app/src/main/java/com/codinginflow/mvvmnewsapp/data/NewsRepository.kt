@@ -28,9 +28,9 @@ class NewsRepository @Inject constructor(
                 newsArticleDao.getAllBreakingNewsArticles()
             },
             fetch = {
-                val response = newsApi.getTopHeadlines()
-                Timber.d("Fetched: ${response.articles}")
-                response.articles
+                val response = newsApi.getWorldNews()
+                Timber.d("Fetched: ${response.response.results}")
+                response.response.results
             },
             saveFetchResult = { serverBreakingNewsArticles ->
                 val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
@@ -38,12 +38,12 @@ class NewsRepository @Inject constructor(
                 val breakingNewsArticles =
                     serverBreakingNewsArticles.map { serverBreakingNewsArticle ->
                         val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
-                            bookmarkedArticle.url == serverBreakingNewsArticle.url
+                            bookmarkedArticle.url == serverBreakingNewsArticle.webUrl
                         }
                         NewsArticle(
-                            title = serverBreakingNewsArticle.title,
-                            url = serverBreakingNewsArticle.url,
-                            urlToImage = serverBreakingNewsArticle.urlToImage,
+                            title = serverBreakingNewsArticle.webTitle,
+                            url = serverBreakingNewsArticle.webUrl,
+                            thumbnail = serverBreakingNewsArticle.fields?.thumbnail,
                             isBookmarked = bookmarked,
                         )
                     }
@@ -89,7 +89,7 @@ class NewsRepository @Inject constructor(
     fun getSearchResults(query: String): Flow<PagingData<NewsArticle>> =
         Pager(
             // small load size works better for testing RemoteMediator
-            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            config = PagingConfig(pageSize = 100, enablePlaceholders = false),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
             pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }
         ).flow

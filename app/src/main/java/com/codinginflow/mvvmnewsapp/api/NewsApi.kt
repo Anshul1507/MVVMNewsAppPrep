@@ -2,26 +2,23 @@ package com.codinginflow.mvvmnewsapp.api
 
 import com.codinginflow.mvvmnewsapp.BuildConfig
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.Query
 
-interface NewsApi {
+interface NewsApi { // TODO: 22.01.2021 Does "Guardian" have to be in the class names?
 
     companion object {
-        const val BASE_URL = "https://newsapi.org/v2/"
-        const val API_KEY = BuildConfig.NEWS_API_ACCESS_KEY
+        const val BASE_URL = "https://content.guardianapis.com/"
+        const val API_KEY = BuildConfig.GUARDIAN_API_KEY
     }
 
-    @Headers("X-Api-Key: $API_KEY")
-    @GET("everything")
+    @GET("search?api-key=$API_KEY&show-fields=thumbnail")
     suspend fun searchNews(
         @Query("q") query: String,
         @Query("page") page: Int,
-        @Query("pageSize") pageSize: Int,
+        @Query("page-size") pageSize: Int,
     ): NewsResponse
 
-    @Headers("X-Api-Key: $API_KEY")
     // TODO: 15.01.2021 Small page size for testing purposes
-    @GET("top-headlines?country=us&pageSize=100")
-    suspend fun getTopHeadlines(): NewsResponse
+    @GET("search?api-key=$API_KEY&section=world&page-size=100&show-fields=thumbnail")
+    suspend fun getWorldNews(): NewsResponse
 }

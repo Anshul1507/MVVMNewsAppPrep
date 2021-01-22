@@ -10,7 +10,7 @@ import java.util.*
 data class NewsArticle(
     val title: String,
     @PrimaryKey val url: String,
-    val urlToImage: String?,
+    val thumbnail: String?,
     val isBookmarked: Boolean,
     val updatedAt: Long = System.currentTimeMillis(),
 )

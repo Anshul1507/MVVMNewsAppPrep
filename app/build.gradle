@@ -19,7 +19,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "NEWS_API_ACCESS_KEY", news_api_access_key)
+        buildConfigField("String", "GUARDIAN_API_KEY", guardian_api_key)
     }
 
     buildTypes {
@@ -76,6 +76,9 @@ dependencies {
     // Retrofit + GSON
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+    // Logging Interceptor
+    implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
 
     // Room
     implementation "androidx.room:room-runtime:2.3.0-alpha04"

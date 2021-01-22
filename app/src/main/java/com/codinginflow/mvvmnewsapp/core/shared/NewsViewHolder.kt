@@ -15,7 +15,7 @@ class NewsViewHolder(
     fun bind(article: NewsArticle) {
         binding.apply {
             Glide.with(itemView)
-                .load(article.urlToImage)
+                .load(article.thumbnail)
                 .error(R.drawable.image_placeholder)
                 .into(imageView)
 

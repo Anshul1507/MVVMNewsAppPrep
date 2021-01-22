@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
-import java.lang.Exception
 
 private const val NEWS_STARTING_PAGE_INDEX = 1
 
@@ -55,21 +54,21 @@ class SearchNewsRemoteMediator(
             Timber.d("start of try-block")
             delay(1000)
             val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
-            val serverSearchResults = apiResponse.articles
-            Timber.d("articles fetched = ${apiResponse.articles.size}")
+            val serverSearchResults = apiResponse.response.results
+            Timber.d("articles fetched = ${serverSearchResults.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
 
             val searchResultArticles = serverSearchResults.map { serverSearchResultArticle ->
                 val bookmarked = bookmarkedArticles.any { bookmarkedArticle ->
-                    bookmarkedArticle.url == serverSearchResultArticle.url
+                    bookmarkedArticle.url == serverSearchResultArticle.webUrl
                 }
 
                 NewsArticle(
-                    title = serverSearchResultArticle.title,
-                    url = serverSearchResultArticle.url,
-                    urlToImage = serverSearchResultArticle.urlToImage,
+                    title = serverSearchResultArticle.webTitle,
+                    url = serverSearchResultArticle.webUrl,
+                    thumbnail = serverSearchResultArticle.fields?.thumbnail,
                     isBookmarked = bookmarked,
                 )
             }
@@ -85,7 +84,7 @@ class SearchNewsRemoteMediator(
 
                 val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
                 val nextKey = if (endOfPaginationReached) null else page + 1
-                val searchResults = serverSearchResults.map { article ->
+                val searchResults = searchResultArticles.map { article ->
                     SearchResult(searchQuery, article.url, prevKey, nextKey, position++)
                 }
                 newsArticleDao.insertArticles(searchResultArticles)
@@ -96,9 +95,6 @@ class SearchNewsRemoteMediator(
         } catch (exception: IOException) {
             MediatorResult.Error(exception)
         } catch (exception: HttpException) {
-            MediatorResult.Error(exception)
-        } catch (exception: Throwable) {
-            Timber.d("caught $exception")
             MediatorResult.Error(exception)
         }
     }
