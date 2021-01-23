@@ -53,7 +53,11 @@ class SearchNewsRemoteMediator(
         return try {
             Timber.d("start of try-block")
             delay(1000)
-            val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
+            val loadSize = when (loadType) {
+                LoadType.REFRESH -> state.config.initialLoadSize
+                else -> state.config.initialLoadSize
+            }
+            val apiResponse = newsApi.searchNews(searchQuery, page, loadSize)
             val serverSearchResults = apiResponse.response.results
             Timber.d("articles fetched = ${serverSearchResults.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
