@@ -28,29 +28,28 @@
                 android:layout_centerHorizontal="true"
                 android:layout_margin="8dp"
                 android:gravity="center_horizontal"
-                android:visibility="gone"
-                tools:text="Error message"
-                tools:visibility="visible" />
+                tools:text="Error message" />
 
             <Button
                 android:id="@+id/button_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Retry"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:text="Retry" />
 
             <TextView
-                android:id="@+id/text_view_empty"
+                android:id="@+id/text_view_no_results"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="No search results"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@android:color/black"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:text="No results found"/>
+
+            <TextView
+                android:id="@+id/text_view_instructions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Tap the magnifying glass to start searching"/>
 
         </RelativeLayout>
 

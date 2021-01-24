@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/breakingNewsFragment">
+    app:startDestination="@id/worldNewsFragment">
 
     <fragment
         android:id="@+id/searchNewsFragment"
@@ -16,8 +16,8 @@
         android:label="Bookmarks"
         tools:layout="@layout/fragment_bookmarks" />
     <fragment
-        android:id="@+id/breakingNewsFragment"
-        android:name="com.codinginflow.mvvmnewsapp.features.breakingnews.BreakingNewsFragment"
-        android:label="Breaking News"
-        tools:layout="@layout/fragment_breaking_news" />
+        android:id="@+id/worldNewsFragment"
+        android:name="com.codinginflow.mvvmnewsapp.features.worldnews.WorldNewsFragment"
+        android:label="World News"
+        tools:layout="@layout/fragment_world_news" />
 </navigation>

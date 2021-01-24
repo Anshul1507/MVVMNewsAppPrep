@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.features.breakingnews
+package com.codinginflow.mvvmnewsapp.features.worldnews
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class BreakingNewsViewModel @ViewModelInject constructor(
+class WorldNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
@@ -57,6 +57,6 @@ class BreakingNewsViewModel @ViewModelInject constructor(
     }
 
     sealed class Event {
-        data class ShowErrorMessage(val throwable: Throwable) : Event()
+        data class ShowErrorMessage(val error: Throwable) : Event()
     }
 }

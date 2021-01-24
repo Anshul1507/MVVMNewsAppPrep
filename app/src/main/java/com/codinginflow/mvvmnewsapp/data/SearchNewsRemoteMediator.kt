@@ -25,19 +25,19 @@ class SearchNewsRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, NewsArticle>
     ): MediatorResult {
-        Timber.d("load with anchorPosition = ${state.anchorPosition}")
+//        Timber.d("load with anchorPosition = ${state.anchorPosition}")
         val page = when (loadType) {
             LoadType.REFRESH -> {
                 Timber.d("Start REFRESH")
                 val nextPageKey = getNextPageKeyClosestToCurrentPosition(state)
-                Timber.d("return REFRESH with nextKey = $nextPageKey")
+//                Timber.d("return REFRESH with nextKey = $nextPageKey")
                 nextPageKey?.minus(1) ?: NEWS_STARTING_PAGE_INDEX
             }
             LoadType.PREPEND -> {
                 Timber.d("Start PREPEND")
                 val prevPageKey = getPreviousPageKeyForFirstItem(state)
                     ?: return MediatorResult.Success(endOfPaginationReached = true)
-                Timber.d("return PREPEND with prevPageKey = $prevPageKey")
+//                Timber.d("return PREPEND with prevPageKey = $prevPageKey")
                 prevPageKey
             }
             LoadType.APPEND -> {
@@ -45,21 +45,18 @@ class SearchNewsRemoteMediator(
                 val nextPageKey = getNextPageKeyForLastItem(state)
                 // TODO: 21.01.2021 The previousPage key should never be null but this should be fine (test with "asdasd")
                     ?: return MediatorResult.Success(endOfPaginationReached = true)
-                Timber.d("return APPEND with nextPageKey = $nextPageKey")
+//                Timber.d("return APPEND with nextPageKey = $nextPageKey")
                 nextPageKey
             }
         }
 
         return try {
-            Timber.d("start of try-block")
-            delay(1000)
-            val loadSize = when (loadType) {
-                LoadType.REFRESH -> state.config.initialLoadSize
-                else -> state.config.initialLoadSize
-            }
-            val apiResponse = newsApi.searchNews(searchQuery, page, loadSize)
+//            Timber.d("start of try-block")
+            delay(3000)
+            // TODO: 23.01.2021 The Guardian API sometimes returns duplicate results on the end/start of pages -> go back to newsapi.org when preparations are finished
+            val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
             val serverSearchResults = apiResponse.response.results
-            Timber.d("articles fetched = ${serverSearchResults.size}")
+//            Timber.d("articles fetched = ${serverSearchResults.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
@@ -84,6 +81,7 @@ class SearchNewsRemoteMediator(
 
                 // TODO: 21.01.2021 This will not work for prepend
                 val lastResultPosition = getQueryPositionForLastItem(state) ?: 0
+//                Timber.d("lestResultPosition = $lastResultPosition")
                 var position = lastResultPosition + 1
 
                 val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
@@ -91,6 +89,7 @@ class SearchNewsRemoteMediator(
                 val searchResults = searchResultArticles.map { article ->
                     SearchResult(searchQuery, article.url, prevKey, nextKey, position++)
                 }
+//                Timber.d("Inserting ${searchResultArticles.size} articles into database")
                 newsArticleDao.insertArticles(searchResultArticles)
                 newsArticleDao.insertSearchResults(searchResults)
                 // TODO: 21.01.2021 Delete old outdated articles?

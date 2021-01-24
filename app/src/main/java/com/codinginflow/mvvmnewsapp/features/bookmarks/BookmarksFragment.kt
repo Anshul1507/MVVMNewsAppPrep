@@ -49,7 +49,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
 
             viewModel.bookmarks.observe(viewLifecycleOwner) { bookmarks ->
                 bookmarksAdapter.submitList(bookmarks)
-                textViewEmpty.isVisible = bookmarks.isEmpty()
+                textViewNoResults.isVisible = bookmarks.isEmpty()
                 recyclerView.isVisible = bookmarks.isNotEmpty()
             }
         }

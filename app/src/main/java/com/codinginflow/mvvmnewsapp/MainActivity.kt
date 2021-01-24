@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import com.codinginflow.mvvmnewsapp.features.bookmarks.BookmarksFragment
-import com.codinginflow.mvvmnewsapp.features.breakingnews.BreakingNewsFragment
+import com.codinginflow.mvvmnewsapp.features.worldnews.WorldNewsFragment
 import com.codinginflow.mvvmnewsapp.databinding.ActivityMainBinding
 import com.codinginflow.mvvmnewsapp.features.searchnews.SearchNewsFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,13 +18,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
 
-    private lateinit var breakingNewsFragment: BreakingNewsFragment
+    private lateinit var worldNewsFragment: WorldNewsFragment
     private lateinit var searchNewsFragment: SearchNewsFragment
     private lateinit var bookmarksFragment: BookmarksFragment
 
     private val fragments: Array<out Fragment>
         get() = arrayOf(
-            breakingNewsFragment,
+            worldNewsFragment,
             searchNewsFragment,
             bookmarksFragment
         )
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
 
         title = when (selectedFragment) {
-            is BreakingNewsFragment ->  "Breaking News"
+            is WorldNewsFragment ->  "World News"
             is SearchNewsFragment -> "Search News"
             is BookmarksFragment -> "Bookmarks"
             else -> ""
@@ -59,20 +59,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
-            breakingNewsFragment = BreakingNewsFragment()
+            worldNewsFragment = WorldNewsFragment()
             searchNewsFragment = SearchNewsFragment()
             bookmarksFragment = BookmarksFragment()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, breakingNewsFragment, "breaking")
+                .add(R.id.fragment_container, worldNewsFragment, "breaking")
                 .add(R.id.fragment_container, searchNewsFragment, "search")
                 .add(R.id.fragment_container, bookmarksFragment, "bookmarks")
                 .commitNow()
         } else {
             selectedIndex = savedInstanceState.getInt("selectedIndex", 0)
 
-            breakingNewsFragment =
-                supportFragmentManager.findFragmentByTag("breaking") as BreakingNewsFragment
+            worldNewsFragment =
+                supportFragmentManager.findFragmentByTag("breaking") as WorldNewsFragment
             searchNewsFragment =
                 supportFragmentManager.findFragmentByTag("search") as SearchNewsFragment
             bookmarksFragment =
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             val currentFragment = selectedFragment
 
             val fragment = when (item.itemId) {
-                R.id.breakingNewsFragment -> breakingNewsFragment
+                R.id.worldNewsFragment -> worldNewsFragment
                 R.id.searchNewsFragment -> searchNewsFragment
                 R.id.bookmarksFragment -> bookmarksFragment
                 else -> null

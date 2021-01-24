@@ -15,6 +15,7 @@ data class NewsArticle(
     val updatedAt: Long = System.currentTimeMillis(),
 )
 
+// having the url as a primary key is important if a result changed positions
 @Entity(tableName = "search_results", primaryKeys = ["searchQuery", "articleUrl"])
 // Foreign key on articleUrl deletes articles out of previous search queries on REPLACE
 data class SearchResult(
