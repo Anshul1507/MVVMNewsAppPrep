@@ -5,15 +5,11 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 
-fun View.showIfOrInvisible(condition: Boolean) {
-    visibility = if (condition) {
-        View.VISIBLE
-    } else {
-        View.INVISIBLE
-    }
-}
-
-fun Fragment.showSnackbar(message: String, duration: Int = Snackbar.LENGTH_LONG, view: View = requireView()) {
+fun Fragment.showSnackbar(
+    message: String,
+    duration: Int = Snackbar.LENGTH_LONG,
+    view: View = requireView()
+) {
     Snackbar.make(view, message, duration).show()
 }
 

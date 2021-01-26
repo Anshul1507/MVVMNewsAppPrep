@@ -25,7 +25,6 @@ class SearchNewsRemoteMediator(
         state: PagingState<Int, NewsArticle>
     ): MediatorResult {
         try {
-//        Timber.d("load with anchorPosition = ${state.anchorPosition}")
             val page = when (loadType) {
                 LoadType.REFRESH -> NEWS_STARTING_PAGE_INDEX
                 LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
@@ -36,11 +35,9 @@ class SearchNewsRemoteMediator(
                 }
             }
 
-//            Timber.d("start of try-block")
             val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
-            delay(3000)
+//            delay(1000) // for testing purposes
             val serverSearchResults = apiResponse.response.results
-//            Timber.d("articles fetched = ${serverSearchResults.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
             val bookmarkedArticles = newsArticleDao.getAllBookmarkedArticles().first()
@@ -72,7 +69,6 @@ class SearchNewsRemoteMediator(
                 val searchResults = searchResultArticles.map { article ->
                     SearchResult(searchQuery, article.url, nextPageKey, queryPosition++)
                 }
-//                Timber.d("Inserting ${searchResultArticles.size} articles into database")
                 newsArticleDao.insertArticles(searchResultArticles)
                 newsArticleDao.insertSearchResults(searchResults)
             }

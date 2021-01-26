@@ -27,16 +27,10 @@ class SearchNewsViewModel @ViewModelInject constructor(
 
     var refreshInProgress = false
 
-    var pendingRefreshDiffing = false
-
-    var pendingRefreshScrollToTop = false
+    var pendingScrollToTopAfterRefresh = false
 
     fun searchArticles(query: String) {
         currentQuery.value = query
-    }
-
-    fun redoQuery() {
-        currentQuery.value = currentQuery.value
     }
 
     fun onBookmarkClick(article: NewsArticle) {

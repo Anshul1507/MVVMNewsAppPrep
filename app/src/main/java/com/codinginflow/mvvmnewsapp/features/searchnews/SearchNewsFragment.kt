@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.MainActivity
@@ -59,8 +58,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator = null // get rid of flickers between different data sets
-//                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
+                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
@@ -77,81 +75,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 textViewInstructions.isVisible = !hasCurrentQuery
             }
 
-            // TODO: 19.01.2021 This is not right yet. I have to play around until this is correct
             newsPagingAdapter.addLoadStateListener { loadState ->
-                when (loadState.mediator?.refresh) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("mediator refresh NotLoading, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
-//                        recyclerView.isVisible = true
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("mediator refresh Loading, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("mediator refresh Error, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
-//                        recyclerView.isVisible = true
-                    }
-                }
-
-                when (loadState.source.refresh) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("source refresh NotLoading, endOfPaginationReached = ${loadState.source.refresh.endOfPaginationReached}")
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("source refresh Loading, endOfPaginationReached = ${loadState.source.refresh.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("source refresh Error, endOfPaginationReached = ${loadState.source.refresh.endOfPaginationReached}")
-                    }
-                }
-
-                when (loadState.mediator?.append) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("mediator append NotLoading, endOfPaginationReached = ${loadState.mediator?.append?.endOfPaginationReached}")
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("mediator append Loading, endOfPaginationReached = ${loadState.mediator?.append?.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("mediator append Error, endOfPaginationReached = ${loadState.mediator?.append?.endOfPaginationReached}")
-                    }
-                }
-
-                when (loadState.source.append) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("source append NotLoading, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("source append Loading, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("source append Error, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                }
-
-                when (loadState.mediator?.prepend) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("mediator prepend NotLoading, endOfPaginationReached = ${loadState.mediator?.prepend?.endOfPaginationReached}")
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("mediator prepend Loading, endOfPaginationReached = ${loadState.mediator?.prepend?.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("mediator prepend Error, endOfPaginationReached = ${loadState.mediator?.prepend?.endOfPaginationReached}")
-                    }
-                }
-
-                when (loadState.source.prepend) {
-                    is LoadState.NotLoading -> {
-//                        Timber.d("source prepend NotLoading, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                    is LoadState.Loading -> {
-//                        Timber.d("source prepend Loading, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                    is LoadState.Error -> {
-//                        Timber.d("source prepend Error, endOfPaginationReached = ${loadState.source.append.endOfPaginationReached}")
-                    }
-                }
 
                 when (val mediatorRefresh = loadState.mediator?.refresh) {
                     is LoadState.Loading -> {
@@ -164,7 +88,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                             recyclerView.scrollToPosition(0)
                             recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
-                            viewModel.pendingRefreshDiffing = true
+                            viewModel.pendingScrollToTopAfterRefresh = true
                         }
                     }
                     is LoadState.Error -> {
@@ -176,15 +100,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                             recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
                             showSnackbar(errorMessage)
-                        }
-                    }
-                }
-
-                when (val sourceRefresh = loadState.source.refresh) {
-                    is LoadState.NotLoading -> {
-                        if (viewModel.refreshInProgress) {
-//                            Timber.d("scroll to 0 because of source")
-//                            recyclerView.scrollToPosition(0)
                         }
                     }
                 }
@@ -206,47 +121,18 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             newsPagingAdapter.registerAdapterDataObserver(object :
                 RecyclerView.AdapterDataObserver() {
 
-                override fun onChanged() {
-//                    Timber.d("onChanged")
-                }
-
                 override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-//                    Timber.d("onItemRangeChanged start = $positionStart, count: $itemCount")
-                    // this is guaranteed to be called as long as DiffUtil compares the updateAt timestamp
-                    if (viewModel.pendingRefreshDiffing) {
+                    if (viewModel.pendingScrollToTopAfterRefresh) {
                         Timber.d("SCROLL UP pendingRefreshDiffing Changed")
                         recyclerView.scrollToPosition(0)
                     }
                 }
 
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    if (viewModel.pendingRefreshDiffing) {
+                    if (viewModel.pendingScrollToTopAfterRefresh) {
                         Timber.d("SCROLL UP pendingRefreshDiffing Inserted")
                         recyclerView.scrollToPosition(0)
                     }
-                }
-
-                override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-                    val start = positionStart
-                    val end = positionStart + itemCount - 1
-                    val firstVisibleItemPosition =
-                        (recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-//                    Timber.d("onItemRangeRemoved start: $start count: $itemCount end: $end firstVisible: $firstVisibleItemPosition adapter-last: ${newsPagingAdapter.itemCount}")
-//                        Handler().postDelayed({
-//                            Timber.d("delayed current: ${(recyclerView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()}")
-//                        }, 500)
-                    if (firstVisibleItemPosition >= newsPagingAdapter.itemCount) {
-//                            Timber.d("SCROLL UP - last item")
-//                            recyclerView.scrollToPosition(0)
-                    }
-                }
-
-                override fun onItemRangeMoved(
-                    fromPosition: Int,
-                    toPosition: Int,
-                    itemCount: Int
-                ) {
-
                 }
             })
 
@@ -254,22 +140,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
                         Timber.d("resetting pendingRefreshDiffing because of scroll")
-                        viewModel.pendingRefreshDiffing = false
+                        viewModel.pendingScrollToTopAfterRefresh = false
                     }
                 }
             })
-
-            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                newsPagingAdapter.loadStateFlow
-                    // Only emit when REFRESH LoadState for RemoteMediator changes.
-                    .distinctUntilChangedBy { it.refresh }
-                    // Only react to cases where Remote REFRESH completes i.e., NotLoading.
-                    .filter { it.refresh is LoadState.NotLoading }
-                    .collect {
-//                        delay(300)
-//                        recyclerView.scrollToPosition(0) // scrolls to top on bookmark change
-                    }
-            }
 
             buttonRetry.setOnClickListener {
                 newsPagingAdapter.retry()
@@ -285,7 +159,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         val searchView = searchItem?.actionView as SearchView
 
         searchView.onQueryTextSubmit { query ->
-//            newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
             // make cached data invisible because we will jump back to the top after refresh finished
             binding.recyclerView.isVisible = false
             binding.recyclerView.scrollToPosition(0)

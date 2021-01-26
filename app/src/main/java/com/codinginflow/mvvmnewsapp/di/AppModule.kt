@@ -53,14 +53,4 @@ object AppModule {
 
     @Provides
     fun provideArticleDao(db: NewsArticleDatabase) = db.newsArticleDao()
-
-    @ApplicationScope
-    @Provides
-    @Singleton
-    fun provideApplicationScope() = CoroutineScope(SupervisorJob())
 }
-
-
-@Retention(AnnotationRetention.RUNTIME)
-@Qualifier
-annotation class ApplicationScope

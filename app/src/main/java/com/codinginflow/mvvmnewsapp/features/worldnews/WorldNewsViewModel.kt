@@ -16,7 +16,6 @@ class WorldNewsViewModel @ViewModelInject constructor(
 
     private val refreshTrigger = object : MutableLiveData<Refresh>() {
         override fun onActive() {
-            Timber.d("Fragment onStart")
             value = Refresh.NORMAL
         }
     }
@@ -36,7 +35,8 @@ class WorldNewsViewModel @ViewModelInject constructor(
 
     init {
         viewModelScope.launch {
-            repository.deleteArticlesFromCacheOlderThan(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1))
+            // TODO: 26.01.2021 Test this a bit more to make sure it doesn't break anything
+            repository.deleteArticlesFromCacheOlderThan(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30))
         }
     }
 
