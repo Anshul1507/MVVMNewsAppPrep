@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+// TODO: 26.01.2021 Update Hilt and use newest annoations 
+
 class WorldNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
@@ -20,6 +22,7 @@ class WorldNewsViewModel @ViewModelInject constructor(
         }
     }
 
+    // TODO: 26.01.2021 Replace for SharedFlow
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 

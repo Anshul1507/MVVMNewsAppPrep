@@ -75,7 +75,11 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
             }
 
             newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onChanged() {
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    recyclerView.scrollToPosition(0)
+                }
+
+                override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
                     recyclerView.scrollToPosition(0)
                 }
             })

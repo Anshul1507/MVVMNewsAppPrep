@@ -106,12 +106,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
 //                Timber.d("loadState.refresh is ${loadState.refresh}")
                 swipeRefreshLayout.isRefreshing = loadState.refresh is LoadState.Loading
-                buttonRetry.isVisible =
+                val showErrorViews =
                     loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
-                textViewError.isVisible =
-                    loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
-
-
+                buttonRetry.isVisible = showErrorViews
+                textViewError.isVisible = showErrorViews
 
                 textViewNoResults.isVisible = loadState.refresh is LoadState.NotLoading &&
                         loadState.refresh.endOfPaginationReached &&
