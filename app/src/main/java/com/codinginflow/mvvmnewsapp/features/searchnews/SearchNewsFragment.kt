@@ -119,7 +119,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             newsPagingAdapter.registerAdapterDataObserver(object :
                 RecyclerView.AdapterDataObserver() {
 
-                override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                     if (viewModel.pendingScrollToTopAfterRefresh) {
                         Timber.d("SCROLL UP pendingRefreshDiffing Changed")
                         recyclerView.scrollToPosition(0)

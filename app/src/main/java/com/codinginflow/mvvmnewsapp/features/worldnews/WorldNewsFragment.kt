@@ -84,8 +84,8 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
             newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
 
-                override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                    Timber.d("onItemRangeChanged start $positionStart count: $itemCount")
+                override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+                    Timber.d("onItemRangeMoved count: $itemCount")
                     recyclerView.scrollToPosition(0)
                 }
 
