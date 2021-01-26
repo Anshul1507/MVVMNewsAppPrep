@@ -21,11 +21,10 @@ class WorldNewsViewModel @ViewModelInject constructor(
             value = Refresh.NORMAL
         }
     }
-
     // TODO: 26.01.2021 Replace for SharedFlow
     private val eventChannel = Channel<Event>()
-    val events = eventChannel.receiveAsFlow()
 
+    val events = eventChannel.receiveAsFlow()
     val breakingNews = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
@@ -35,6 +34,8 @@ class WorldNewsViewModel @ViewModelInject constructor(
             }
         ).asLiveData()
     }
+
+    var refreshInProgress = false
 
     init {
         viewModelScope.launch {

@@ -88,7 +88,8 @@ class NewsRepository @Inject constructor(
     fun getSearchResultsPaged(query: String): Flow<PagingData<NewsArticle>> =
         Pager(
             // enabledPlaceholders true (default) makes scrollToPosition(0) work after dropping pages
-            // normally we should be able to set a maxSize without PREPEND but this seems to be bugged, see also: https://stackoverflow.com/a/63139647/8281994
+            // normally we should be able to set a maxSize without PREPEND but there is currently a bug that causes an IndexOutOfBoundsException
+            // TODO: 26.01.2021 Update dependency when next paging release is out
             config = PagingConfig(pageSize = 50),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
             pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }

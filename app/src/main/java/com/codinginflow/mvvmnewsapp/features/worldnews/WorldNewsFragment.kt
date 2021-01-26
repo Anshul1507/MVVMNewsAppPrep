@@ -22,6 +22,7 @@ import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import timber.log.Timber
 
 @AndroidEntryPoint
 class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
@@ -33,8 +34,12 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
     private val binding by viewBinding(FragmentWorldNewsBinding::bind)
 
+    private var firstInsertCompleted = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        firstInsertCompleted = false
 
         newsAdapter = NewsListAdapter(
             onItemClick = { article ->
@@ -64,7 +69,36 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                     "Could not refresh:\n${result.error?.localizedMessage ?: "An unknown error occurred"}"
 
                 newsAdapter.submitList(result.data)
+
+                when (result) {
+                    is Resource.Loading -> viewModel.refreshInProgress = true
+                    is Resource.Success -> {
+                        if (viewModel.refreshInProgress) {
+                            recyclerView.scrollToPosition(0)
+                            viewModel.refreshInProgress = false
+                        }
+                    }
+                    is Resource.Error -> viewModel.refreshInProgress = false
+                }
             }
+
+            newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+
+                override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                    Timber.d("onItemRangeChanged start $positionStart count: $itemCount")
+                    recyclerView.scrollToPosition(0)
+                }
+
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    Timber.d("onItemRangeInserted start $positionStart count: $itemCount")
+                    // opening the fragment causes an insert for all items -> we want to ignore that
+                    if (firstInsertCompleted) {
+                        recyclerView.scrollToPosition(0)
+                    } else {
+                        firstInsertCompleted = true
+                    }
+                }
+            })
 
             swipeRefreshLayout.setOnRefreshListener {
                 viewModel.onManualRefresh()
@@ -73,12 +107,6 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
             buttonRetry.setOnClickListener {
                 viewModel.onManualRefresh()
             }
-
-            newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onChanged() {
-                    recyclerView.scrollToPosition(0)
-                }
-            })
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
