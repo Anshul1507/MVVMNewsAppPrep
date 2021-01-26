@@ -15,7 +15,7 @@ inline fun <ResultType, RequestType> networkBoundResource(
         emit(Resource.Loading(data))
 
         try {
-            kotlinx.coroutines.delay(1000)
+//            kotlinx.coroutines.delay(1000)
             saveFetchResult(fetch())
             query().map { Resource.Success(it) }
         } catch (t: Throwable) {
