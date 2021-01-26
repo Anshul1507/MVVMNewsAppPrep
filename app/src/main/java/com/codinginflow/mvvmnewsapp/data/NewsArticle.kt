@@ -15,18 +15,18 @@ data class NewsArticle(
     val updatedAt: Long = System.currentTimeMillis(),
 )
 
-// having the url as a primary key is important if a result changed positions
+// url as a primary key gets rid of duplicates
 @Entity(tableName = "search_results", primaryKeys = ["searchQuery", "articleUrl"])
 // Foreign key on articleUrl deletes articles out of previous search queries on REPLACE
 data class SearchResult(
     val searchQuery: String,
     val articleUrl: String,
-    val prevPageKey: Int?,
     val nextPageKey: Int?,
     val queryPosition: Int
 )
 
 @Entity(tableName = "breaking_news")
 data class BreakingNews(
-    @PrimaryKey val articleUrl: String
+    val articleUrl: String,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0 // we need this for the order, otherwise an article can move around if it also appears in a search query
 )

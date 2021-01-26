@@ -8,7 +8,6 @@ import com.codinginflow.mvvmnewsapp.api.NewsApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
-import timber.log.Timber
 import java.io.IOException
 
 private const val NEWS_STARTING_PAGE_INDEX = 1
@@ -16,7 +15,7 @@ private const val NEWS_STARTING_PAGE_INDEX = 1
 class SearchNewsRemoteMediator(
     private val searchQuery: String,
     private val newsDb: NewsArticleDatabase,
-    private val newsApi: NewsApi
+    private val newsApi: NewsApi,
 ) : RemoteMediator<Int, NewsArticle>() {
 
     private val newsArticleDao = newsDb.newsArticleDao()
@@ -25,36 +24,21 @@ class SearchNewsRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, NewsArticle>
     ): MediatorResult {
+        try {
 //        Timber.d("load with anchorPosition = ${state.anchorPosition}")
-        val page = when (loadType) {
-            LoadType.REFRESH -> {
-                Timber.d("Start REFRESH")
-                val nextPageKey = getNextPageKeyClosestToCurrentPosition(state)
-//                Timber.d("return REFRESH with nextKey = $nextPageKey")
-                nextPageKey?.minus(1) ?: NEWS_STARTING_PAGE_INDEX
+            val page = when (loadType) {
+                LoadType.REFRESH -> NEWS_STARTING_PAGE_INDEX
+                LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
+                LoadType.APPEND -> {
+                    val nextKey = getNextPageKeyForLastItem(state)
+                        ?: return MediatorResult.Success(endOfPaginationReached = true)
+                    nextKey
+                }
             }
-            LoadType.PREPEND -> {
-                Timber.d("Start PREPEND")
-                val prevPageKey = getPreviousPageKeyForFirstItem(state)
-                    ?: return MediatorResult.Success(endOfPaginationReached = true)
-//                Timber.d("return PREPEND with prevPageKey = $prevPageKey")
-                prevPageKey
-            }
-            LoadType.APPEND -> {
-                Timber.d("Start APPEND")
-                val nextPageKey = getNextPageKeyForLastItem(state)
-                // TODO: 21.01.2021 The previousPage key should never be null but this should be fine (test with "asdasd")
-                    ?: return MediatorResult.Success(endOfPaginationReached = true)
-//                Timber.d("return APPEND with nextPageKey = $nextPageKey")
-                nextPageKey
-            }
-        }
 
-        return try {
 //            Timber.d("start of try-block")
-            delay(3000)
-            // TODO: 23.01.2021 The Guardian API sometimes returns duplicate results on the end/start of pages -> go back to newsapi.org when preparations are finished
             val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
+            delay(3000)
             val serverSearchResults = apiResponse.response.results
 //            Timber.d("articles fetched = ${serverSearchResults.size}")
             val endOfPaginationReached = serverSearchResults.isEmpty()
@@ -79,52 +63,30 @@ class SearchNewsRemoteMediator(
                     newsArticleDao.clearSearchResultsForQuery(searchQuery)
                 }
 
-                // TODO: 21.01.2021 This will not work for prepend
-                val lastResultPosition = getQueryPositionForLastItem(state) ?: 0
-//                Timber.d("lestResultPosition = $lastResultPosition")
-                var position = lastResultPosition + 1
+                // TODO: 26.01.2021 can we get race conditions with other loads here?
+                val lastQueryPosition = newsArticleDao.getLastQueryPosition(searchQuery) ?: 0
+                var queryPosition = lastQueryPosition + 1
 
-                val prevKey = if (page == NEWS_STARTING_PAGE_INDEX) null else page - 1
-                val nextKey = if (endOfPaginationReached) null else page + 1
+                val nextPageKey = page + 1 // TODO: 26.01.2021 I think I can ignore endOfPaginationReached here
+
                 val searchResults = searchResultArticles.map { article ->
-                    SearchResult(searchQuery, article.url, prevKey, nextKey, position++)
+                    SearchResult(searchQuery, article.url, nextPageKey, queryPosition++)
                 }
 //                Timber.d("Inserting ${searchResultArticles.size} articles into database")
                 newsArticleDao.insertArticles(searchResultArticles)
                 newsArticleDao.insertSearchResults(searchResults)
-                // TODO: 21.01.2021 Delete old outdated articles?
             }
-            MediatorResult.Success(endOfPaginationReached)
+            return MediatorResult.Success(endOfPaginationReached)
         } catch (exception: IOException) {
-            MediatorResult.Error(exception)
+            return MediatorResult.Error(exception)
         } catch (exception: HttpException) {
-            MediatorResult.Error(exception)
+            return MediatorResult.Error(exception)
         }
     }
 
     private suspend fun getNextPageKeyForLastItem(state: PagingState<Int, NewsArticle>): Int? {
         return state.lastItemOrNull()?.let { article ->
             newsArticleDao.getSearchResult(article.url).nextPageKey
-        }
-    }
-
-    private suspend fun getPreviousPageKeyForFirstItem(state: PagingState<Int, NewsArticle>): Int? {
-        return state.firstItemOrNull()?.let { article ->
-            newsArticleDao.getSearchResult(article.url).prevPageKey
-        }
-    }
-
-    private suspend fun getNextPageKeyClosestToCurrentPosition(state: PagingState<Int, NewsArticle>): Int? {
-        return state.anchorPosition?.let { position ->
-            state.closestItemToPosition(position)?.url?.let { articleUrl ->
-                newsArticleDao.getSearchResult(articleUrl).nextPageKey
-            }
-        }
-    }
-
-    private suspend fun getQueryPositionForLastItem(state: PagingState<Int, NewsArticle>): Int? {
-        return state.lastItemOrNull()?.let { article ->
-            newsArticleDao.getSearchResult(article.url).queryPosition
         }
     }
 }

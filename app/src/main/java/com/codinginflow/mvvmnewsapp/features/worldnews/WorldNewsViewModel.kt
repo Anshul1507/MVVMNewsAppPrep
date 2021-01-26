@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class WorldNewsViewModel @ViewModelInject constructor(
     private val repository: NewsRepository
@@ -31,6 +32,12 @@ class WorldNewsViewModel @ViewModelInject constructor(
                 showErrorMessage(t)
             }
         ).asLiveData()
+    }
+
+    init {
+        viewModelScope.launch {
+            repository.deleteArticlesFromCacheOlderThan(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1))
+        }
     }
 
     fun onManualRefresh() {

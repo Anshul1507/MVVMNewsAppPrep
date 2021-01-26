@@ -4,7 +4,7 @@ import com.codinginflow.mvvmnewsapp.BuildConfig
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface NewsApi { // TODO: 22.01.2021 Does "Guardian" have to be in the class names?
+interface NewsApi {
 
     companion object {
         const val BASE_URL = "https://content.guardianapis.com/"

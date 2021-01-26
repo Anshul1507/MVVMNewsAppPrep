@@ -11,14 +11,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.text.DateFormat
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-const val FIVE_MINUTES_IN_MILLIS = 5 * 60 * 1000 // short span for easier testing
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
     private val newsDb: NewsArticleDatabase,
-    private val newsArticleDatabase: NewsArticleDatabase
+    private val newsArticleDatabase: NewsArticleDatabase,
 ) {
     private val newsArticleDao = newsDb.newsArticleDao()
 
@@ -68,7 +67,7 @@ class NewsRepository @Inject constructor(
                     }
                     val oldestTimestamp = sortedArticles.firstOrNull()?.updatedAt
                     val needsRefresh =
-                        oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - FIVE_MINUTES_IN_MILLIS
+                        oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)
                     Timber.d(
                         "oldestTimestamp = ${
                             DateFormat.getDateTimeInstance().format(oldestTimestamp ?: 0)
@@ -86,9 +85,11 @@ class NewsRepository @Inject constructor(
             onFetchFailed = onFetchFailed
         )
 
-    fun getSearchResults(query: String): Flow<PagingData<NewsArticle>> =
+    fun getSearchResultsPaged(query: String): Flow<PagingData<NewsArticle>> =
         Pager(
-            config = PagingConfig(pageSize = 50, enablePlaceholders = false),
+            // enabledPlaceholders true (default) makes scrollToPosition(0) work after dropping pages
+            // normally we should be able to set a maxSize without PREPEND but this seems to be bugged, see also: https://stackoverflow.com/a/63139647/8281994
+            config = PagingConfig(pageSize = 50),
             remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
             pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }
         ).flow
@@ -100,7 +101,11 @@ class NewsRepository @Inject constructor(
         newsArticleDao.update(article)
     }
 
-    suspend fun deleteAllBookmarks() {
-        newsArticleDao.deleteAllBookmarks()
+    suspend fun resetAllBookmarks() {
+        newsArticleDao.resetAllBookmarks()
+    }
+
+    suspend fun deleteArticlesFromCacheOlderThan(timeStampInMillis: Long) {
+        newsArticleDao.deleteArticlesFromCacheOlderThan(timeStampInMillis)
     }
 }

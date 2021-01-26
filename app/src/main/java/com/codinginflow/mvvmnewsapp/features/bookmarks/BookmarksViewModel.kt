@@ -22,7 +22,7 @@ class BookmarksViewModel @ViewModelInject constructor(
 
     fun onDeleteAllBookmarks() {
         viewModelScope.launch {
-            repository.deleteAllBookmarks()
+            repository.resetAllBookmarks()
         }
     }
 }

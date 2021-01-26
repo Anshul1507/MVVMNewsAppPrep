@@ -15,10 +15,9 @@ class SearchNewsViewModel @ViewModelInject constructor(
 ) : ViewModel() {
 
     private val currentQuery = state.getLiveData<String?>("currentQuery", null)
-
     val newsArticles = currentQuery.switchMap { query ->
         query?.let {
-            repository.getSearchResults(query).asLiveData().cachedIn(viewModelScope)
+            repository.getSearchResultsPaged(query).asLiveData().cachedIn(viewModelScope)
         } ?: MutableLiveData(PagingData.empty())
     }
 
@@ -28,10 +27,16 @@ class SearchNewsViewModel @ViewModelInject constructor(
 
     var refreshInProgress = false
 
+    var pendingRefreshDiffing = false
+
     var pendingRefreshScrollToTop = false
 
     fun searchArticles(query: String) {
         currentQuery.value = query
+    }
+
+    fun redoQuery() {
+        currentQuery.value = currentQuery.value
     }
 
     fun onBookmarkClick(article: NewsArticle) {

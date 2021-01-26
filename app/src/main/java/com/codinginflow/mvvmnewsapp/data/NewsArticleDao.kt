@@ -19,8 +19,11 @@ interface NewsArticleDao {
     @Query("SELECT * FROM search_results WHERE articleUrl = :articleUrl")
     suspend fun getSearchResult(articleUrl: String): SearchResult
 
+    @Query("SELECT MAX(queryPosition) FROM search_results WHERE searchQuery = :searchQuery")
+    suspend fun getLastQueryPosition(searchQuery: String): Int?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertArticles(articles: List<NewsArticle>) : LongArray
+    suspend fun insertArticles(articles: List<NewsArticle>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBreakingNews(breakingNews: List<BreakingNews>)
@@ -31,15 +34,15 @@ interface NewsArticleDao {
     @Update
     suspend fun update(article: NewsArticle)
 
-    @Update
-    suspend fun update(articles: List<NewsArticle>)
-
     @Query("UPDATE news_articles SET isBookmarked = 0")
-    suspend fun deleteAllBookmarks()
+    suspend fun resetAllBookmarks()
 
     @Query("DELETE FROM search_results WHERE searchQuery = :query")
     suspend fun clearSearchResultsForQuery(query: String)
 
     @Query("DELETE FROM breaking_news")
     suspend fun deleteAllBreakingNews()
+
+    @Query("DELETE FROM news_articles WHERE updatedAt < :timeStampInMillis")
+    suspend fun deleteArticlesFromCacheOlderThan(timeStampInMillis: Long)
 }

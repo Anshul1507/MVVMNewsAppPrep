@@ -113,6 +113,6 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
     override fun onBottomNavigationFragmentReselected() {
         binding.recyclerView.scrollToPosition(0)
-        viewModel.onManualRefresh()
+//        viewModel.onManualRefresh()
     }
 }

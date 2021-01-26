@@ -3,18 +3,17 @@ package com.codinginflow.mvvmnewsapp.features.searchnews
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.MainActivity
@@ -24,7 +23,6 @@ import com.codinginflow.mvvmnewsapp.util.onQueryTextSubmit
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
@@ -61,7 +59,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
+                itemAnimator = null // get rid of flickers between different data sets
+//                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
@@ -69,9 +68,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             }
 
             swipeRefreshLayout.setOnRefreshListener {
-                // TODO: 23.01.2021 If refresh fails we normally need to call retry, not refresh. Also, not
-                //  having a retry button visible somewhere could make the user think we are at the end of
-                //  the data (Although we show an error snackbar)
+                // TODO: 26.01.2021 Not yet sure yet if retry refresh and refresh equivalent
                 newsPagingAdapter.refresh()
             }
 
@@ -85,12 +82,14 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 when (loadState.mediator?.refresh) {
                     is LoadState.NotLoading -> {
 //                        Timber.d("mediator refresh NotLoading, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
+//                        recyclerView.isVisible = true
                     }
                     is LoadState.Loading -> {
 //                        Timber.d("mediator refresh Loading, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
                     }
                     is LoadState.Error -> {
 //                        Timber.d("mediator refresh Error, endOfPaginationReached = ${loadState.mediator?.refresh?.endOfPaginationReached}")
+//                        recyclerView.isVisible = true
                     }
                 }
 
@@ -162,18 +161,21 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     is LoadState.NotLoading -> {
                         if (viewModel.refreshInProgress) {
 //                            Timber.d("mediator.refresh = NotLoading -> scroll to 0")
-//                            recyclerView.scrollToPosition(0) // this does not work if there are new items at the top
+                            recyclerView.scrollToPosition(0)
+                            recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
+                            viewModel.pendingRefreshDiffing = true
                         }
                     }
                     is LoadState.Error -> {
 //                        Timber.d("refresh = LoadState.Error")
                         val errorMessage =
-                            "Could not refresh:\n${mediatorRefresh.error.localizedMessage ?: "An unknown error occurred"}"
+                            "Could not load search results:\n${mediatorRefresh.error.localizedMessage ?: "An unknown error occurred"}"
                         textViewError.text = errorMessage
                         if (viewModel.refreshInProgress) {
-                            showSnackbar(errorMessage)
+                            recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
+                            showSnackbar(errorMessage)
                         }
                     }
                 }
@@ -187,7 +189,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     }
                 }
 
-                recyclerView.isVisible = newsPagingAdapter.itemCount > 0
+//                Timber.d("loadState.refresh is ${loadState.refresh}")
                 swipeRefreshLayout.isRefreshing = loadState.refresh is LoadState.Loading
                 buttonRetry.isVisible =
                     loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
@@ -197,28 +199,30 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
 
                 textViewNoResults.isVisible = loadState.refresh is LoadState.NotLoading &&
-                        loadState.refresh.endOfPaginationReached
-                newsPagingAdapter.itemCount < 1
+                        loadState.refresh.endOfPaginationReached &&
+                        newsPagingAdapter.itemCount < 1
             }
 
             newsPagingAdapter.registerAdapterDataObserver(object :
                 RecyclerView.AdapterDataObserver() {
 
                 override fun onChanged() {
-                        Timber.d("onChanged")
+//                    Timber.d("onChanged")
                 }
 
                 override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                        Timber.d("onItemRangeChanged start = $positionStart, count: $itemCount")
+//                    Timber.d("onItemRangeChanged start = $positionStart, count: $itemCount")
+                    // this is guaranteed to be called as long as DiffUtil compares the updateAt timestamp
+                    if (viewModel.pendingRefreshDiffing) {
+                        Timber.d("SCROLL UP pendingRefreshDiffing Changed")
+                        recyclerView.scrollToPosition(0)
+                    }
                 }
 
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    val firstVisibleItemPosition =
-                        (recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                    Timber.d("onItemRangeInserted start = $positionStart, count: $itemCount, firstVisibleItemPosition: $firstVisibleItemPosition")
-                    if (positionStart < firstVisibleItemPosition) {
-//                        Timber.d("SCROLL UP - Insert")
-//                            recyclerView.scrollToPosition(0)
+                    if (viewModel.pendingRefreshDiffing) {
+                        Timber.d("SCROLL UP pendingRefreshDiffing Inserted")
+                        recyclerView.scrollToPosition(0)
                     }
                 }
 
@@ -227,7 +231,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     val end = positionStart + itemCount - 1
                     val firstVisibleItemPosition =
                         (recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                     Timber.d("onItemRangeRemoved start: $start count: $itemCount end: $end firstVisible: $firstVisibleItemPosition adapter-last: ${newsPagingAdapter.itemCount}")
+//                    Timber.d("onItemRangeRemoved start: $start count: $itemCount end: $end firstVisible: $firstVisibleItemPosition adapter-last: ${newsPagingAdapter.itemCount}")
 //                        Handler().postDelayed({
 //                            Timber.d("delayed current: ${(recyclerView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()}")
 //                        }, 500)
@@ -242,12 +246,15 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     toPosition: Int,
                     itemCount: Int
                 ) {
-                    val firstVisibleItemPosition =
-                        (recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                    Timber.d("onItemRangeMoved from: $fromPosition to: $toPosition firstVisibleItemPosition: $firstVisibleItemPosition")
-                    if (toPosition < firstVisibleItemPosition) {
-//                            recyclerView.scrollToPosition(0)
-//                            Timber.d("SCROLL UP - MOVED")
+
+                }
+            })
+
+            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        Timber.d("resetting pendingRefreshDiffing because of scroll")
+                        viewModel.pendingRefreshDiffing = false
                     }
                 }
             })
@@ -259,8 +266,9 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     // Only react to cases where Remote REFRESH completes i.e., NotLoading.
                     .filter { it.refresh is LoadState.NotLoading }
                     .collect {
-                        delay(300)
-                        recyclerView.scrollToPosition(0) }
+//                        delay(300)
+//                        recyclerView.scrollToPosition(0) // scrolls to top on bookmark change
+                    }
             }
 
             buttonRetry.setOnClickListener {
@@ -277,6 +285,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         val searchView = searchItem?.actionView as SearchView
 
         searchView.onQueryTextSubmit { query ->
+//            newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
+            // make cached data invisible because we will jump back to the top after refresh finished
+            binding.recyclerView.isVisible = false
+            binding.recyclerView.scrollToPosition(0)
             viewModel.searchArticles(query)
             searchView.clearFocus()
         }
@@ -285,6 +297,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.refresh -> {
+                // clicking retry on the footer after this failed causes it to retry refresh. I reported
+                // this to dlam and he said they will probably fix this
                 newsPagingAdapter.refresh()
                 true
             }
@@ -293,6 +307,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
     }
 
     override fun onBottomNavigationFragmentReselected() {
-        binding.recyclerView.scrollToPosition(0) // TODO: 16.01.2021 This doesn't scroll all the way up if we are far enough down
+        binding.recyclerView.scrollToPosition(0)
     }
 }
