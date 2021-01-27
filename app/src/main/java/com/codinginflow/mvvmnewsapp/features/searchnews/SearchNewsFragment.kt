@@ -176,7 +176,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         return when (item.itemId) {
             R.id.refresh -> {
                 // clicking retry on the footer after this failed causes it to retry refresh. I reported
-                // this to dlam and he said they will probably fix this
+                // this to dlam and he said they will probably provide an argument in the future
                 newsPagingAdapter.refresh()
                 true
             }

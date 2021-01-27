@@ -60,11 +60,10 @@ class SearchNewsRemoteMediator(
                     newsArticleDao.clearSearchResultsForQuery(searchQuery)
                 }
 
-                // TODO: 26.01.2021 can we get race conditions with other loads here?
                 val lastQueryPosition = newsArticleDao.getLastQueryPosition(searchQuery) ?: 0
                 var queryPosition = lastQueryPosition + 1
 
-                val nextPageKey = page + 1 // TODO: 26.01.2021 I think I can ignore endOfPaginationReached here
+                val nextPageKey = page + 1 // TODO: 26.01.2021 I think I can ignore endOfPaginationReached here -> I have to test this with newsapi.org
 
                 val searchResults = searchResultArticles.map { article ->
                     SearchResult(searchQuery, article.url, nextPageKey, queryPosition++)
