@@ -57,7 +57,8 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                 setHasFixedSize(true)
                 adapter = newsAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
+                itemAnimator = null // we don't need animations and this gets us rid of ugly DiffUtil changes
+//                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
@@ -83,7 +84,6 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
             }
 
             newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-
                 override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                     Timber.d("onItemRangeMoved count: $itemCount")
                     recyclerView.scrollToPosition(0)

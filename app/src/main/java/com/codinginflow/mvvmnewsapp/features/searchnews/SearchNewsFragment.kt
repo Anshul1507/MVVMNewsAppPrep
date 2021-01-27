@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.MainActivity
@@ -58,7 +59,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
+                itemAnimator = null // we don't need animations and this gets us rid of ugly DiffUtil changes
+//                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
@@ -158,6 +160,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 
         searchView.onQueryTextSubmit { query ->
             // make cached data invisible because we will jump back to the top after refresh finished
+            // PagingData.empty() avoids that the old list flashes up for a moment if we are offline
+            newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
             binding.recyclerView.isVisible = false
             binding.recyclerView.scrollToPosition(0)
             viewModel.searchArticles(query)
