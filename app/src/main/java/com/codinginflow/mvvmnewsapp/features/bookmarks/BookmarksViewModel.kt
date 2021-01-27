@@ -4,9 +4,12 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class BookmarksViewModel @ViewModelInject constructor(
+@HiltViewModel
+class BookmarksViewModel @Inject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 

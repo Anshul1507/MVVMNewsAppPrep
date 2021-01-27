@@ -1,18 +1,20 @@
 package com.codinginflow.mvvmnewsapp.features.worldnews
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-// TODO: 26.01.2021 Update Hilt and use newest annoations 
-
-class WorldNewsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class WorldNewsViewModel @Inject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
@@ -21,9 +23,8 @@ class WorldNewsViewModel @ViewModelInject constructor(
             value = Refresh.NORMAL
         }
     }
-    // TODO: 26.01.2021 Replace for SharedFlow
-    private val eventChannel = Channel<Event>()
-    val events = eventChannel.receiveAsFlow()
+    private val eventFlow = MutableSharedFlow<Event>()
+    val events: Flow<Event> = eventFlow
 
     val breakingNews = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
@@ -31,12 +32,12 @@ class WorldNewsViewModel @ViewModelInject constructor(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
             onFetchSuccess = {
                 viewModelScope.launch {
-                    eventChannel.send(Event.ScrollToTop)
+                    eventFlow.emit(Event.ScrollToTop)
                 }
             },
             onFetchFailed = { t ->
                 viewModelScope.launch {
-                    eventChannel.send(Event.ShowErrorMessage(t))
+                    eventFlow.emit(Event.ShowErrorMessage(t))
                 }
             }
         ).asLiveData()

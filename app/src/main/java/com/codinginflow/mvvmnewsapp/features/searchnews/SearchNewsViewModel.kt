@@ -7,11 +7,14 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SearchNewsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SearchNewsViewModel @Inject constructor(
     private val repository: NewsRepository,
-    @Assisted state: SavedStateHandle
+    state: SavedStateHandle
 ) : ViewModel() {
 
     private val currentQuery = state.getLiveData<String?>("currentQuery", null)
