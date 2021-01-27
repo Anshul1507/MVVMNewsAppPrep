@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var navController: NavController
+    private lateinit var binding: ActivityMainBinding
 
     private lateinit var worldNewsFragment: WorldNewsFragment
     private lateinit var searchNewsFragment: SearchNewsFragment
@@ -55,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
@@ -110,7 +111,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (selectedIndex != 0) {
-            selectFragment(fragments[0])
+            binding.bottomNav.selectedItemId = R.id.worldNewsFragment
         } else {
             super.onBackPressed()
         }
