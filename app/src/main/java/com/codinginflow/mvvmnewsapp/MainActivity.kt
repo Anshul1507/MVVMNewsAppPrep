@@ -11,10 +11,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    interface OnBottomNavigationFragmentReselected {
-        fun onBottomNavigationFragmentReselected()
-    }
-
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var worldNewsFragment: WorldNewsFragment
@@ -105,6 +101,10 @@ class MainActivity : AppCompatActivity() {
 
             true
         }
+    }
+
+    interface OnBottomNavigationFragmentReselected {
+        fun onBottomNavigationFragmentReselected()
     }
 
     override fun onBackPressed() {

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".features.worldnews.WorldNewsFragment">
+    android:layout_height="match_parent">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
@@ -28,22 +26,17 @@
                 android:layout_centerHorizontal="true"
                 android:layout_margin="8dp"
                 android:gravity="center_horizontal"
-                android:visibility="invisible"
-                tools:text="An error occurred"
-                tools:visibility="visible" />
+                tools:text="An error occurred" />
 
             <Button
                 android:id="@+id/button_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Retry"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:text="Retry" />
 
         </RelativeLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
