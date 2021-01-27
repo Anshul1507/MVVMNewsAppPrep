@@ -57,7 +57,8 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                 setHasFixedSize(true)
                 adapter = newsAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator = null // we don't need animations and this gets us rid of ugly DiffUtil changes
+                itemAnimator =
+                    null // we don't need animations and this gets us rid of ugly DiffUtil changes
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
@@ -70,17 +71,6 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                     "Could not refresh:\n${result.error?.localizedMessage ?: "An unknown error occurred"}"
 
                 newsAdapter.submitList(result.data)
-
-                when (result) {
-                    is Resource.Loading -> viewModel.refreshInProgress = true
-                    is Resource.Success -> {
-                        if (viewModel.refreshInProgress) {
-                            recyclerView.scrollToPosition(0)
-                            viewModel.refreshInProgress = false
-                        }
-                    }
-                    is Resource.Error -> viewModel.refreshInProgress = false
-                }
             }
 
             newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
@@ -107,16 +97,17 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
             buttonRetry.setOnClickListener {
                 viewModel.onManualRefresh()
             }
-        }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.events.collect { event ->
-                when (event) {
-                    is WorldNewsViewModel.Event.ShowErrorMessage -> {
-                        showSnackbar(
-                            // TODO: 23.01.2021 We build this error string in 2 different places -> should we unite this somewhere upstream?
-                            "Could not refresh:\n${event.error.localizedMessage ?: "An unknown error occurred"}"
-                        )
+            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+                viewModel.events.collect { event ->
+                    when (event) {
+                        is WorldNewsViewModel.Event.ShowErrorMessage -> {
+                            showSnackbar(
+                                // TODO: 23.01.2021 We build this error string in 2 different places -> should we unite this somewhere upstream?
+                                "Could not refresh:\n${event.error.localizedMessage ?: "An unknown error occurred"}"
+                            )
+                        }
+                        is WorldNewsViewModel.Event.ScrollToTop -> recyclerView.scrollToPosition(0)
                     }
                 }
             }

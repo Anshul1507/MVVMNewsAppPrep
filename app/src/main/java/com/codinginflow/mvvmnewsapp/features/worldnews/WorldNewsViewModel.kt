@@ -29,8 +29,15 @@ class WorldNewsViewModel @ViewModelInject constructor(
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
+            onFetchSuccess = {
+                viewModelScope.launch {
+                    eventChannel.send(Event.ScrollToTop)
+                }
+            },
             onFetchFailed = { t ->
-                showErrorMessage(t)
+                viewModelScope.launch {
+                    eventChannel.send(Event.ShowErrorMessage(t))
+                }
             }
         ).asLiveData()
     }
@@ -57,17 +64,12 @@ class WorldNewsViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun showErrorMessage(t: Throwable) {
-        viewModelScope.launch {
-            eventChannel.send(Event.ShowErrorMessage(t))
-        }
-    }
-
     enum class Refresh {
         FORCE, NORMAL
     }
 
     sealed class Event {
+        object ScrollToTop : Event()
         data class ShowErrorMessage(val error: Throwable) : Event()
     }
 }

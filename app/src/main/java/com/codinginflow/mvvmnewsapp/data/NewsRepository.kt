@@ -21,7 +21,11 @@ class NewsRepository @Inject constructor(
 ) {
     private val newsArticleDao = newsDb.newsArticleDao()
 
-    fun getBreakingNews(forceRefresh: Boolean, onFetchFailed: (Throwable) -> Unit): Flow<Resource<List<NewsArticle>>> =
+    fun getBreakingNews(
+        forceRefresh: Boolean,
+        onFetchSuccess: () -> Unit,
+        onFetchFailed: (Throwable) -> Unit
+    ): Flow<Resource<List<NewsArticle>>> =
         networkBoundResource(
             query = {
                 newsArticleDao.getAllBreakingNewsArticles()
@@ -67,7 +71,9 @@ class NewsRepository @Inject constructor(
                     }
                     val oldestTimestamp = sortedArticles.firstOrNull()?.updatedAt
                     val needsRefresh =
-                        oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)
+                        oldestTimestamp == null || oldestTimestamp < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(
+                            5
+                        )
                     Timber.d(
                         "oldestTimestamp = ${
                             DateFormat.getDateTimeInstance().format(oldestTimestamp ?: 0)
@@ -82,6 +88,7 @@ class NewsRepository @Inject constructor(
                     needsRefresh
                 }
             },
+            onFetchSuccess = onFetchSuccess,
             onFetchFailed = onFetchFailed
         )
 

@@ -6,6 +6,7 @@ inline fun <ResultType, RequestType> networkBoundResource(
     crossinline query: () -> Flow<ResultType>,
     crossinline fetch: suspend () -> RequestType,
     crossinline saveFetchResult: suspend (RequestType) -> Unit,
+    crossinline onFetchSuccess: () -> Unit = { },
     crossinline onFetchFailed: (Throwable) -> Unit = { },
     crossinline shouldFetch: (ResultType) -> Boolean = { true }
 ) = flow {
@@ -17,6 +18,7 @@ inline fun <ResultType, RequestType> networkBoundResource(
         try {
 //            kotlinx.coroutines.delay(1000)
             saveFetchResult(fetch())
+            onFetchSuccess()
             query().map { Resource.Success(it) }
         } catch (t: Throwable) {
             onFetchFailed(t)
