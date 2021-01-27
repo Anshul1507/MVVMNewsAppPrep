@@ -3,11 +3,10 @@ package com.codinginflow.mvvmnewsapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import com.codinginflow.mvvmnewsapp.features.bookmarks.BookmarksFragment
-import com.codinginflow.mvvmnewsapp.features.worldnews.WorldNewsFragment
 import com.codinginflow.mvvmnewsapp.databinding.ActivityMainBinding
+import com.codinginflow.mvvmnewsapp.features.bookmarks.BookmarksFragment
 import com.codinginflow.mvvmnewsapp.features.searchnews.SearchNewsFragment
+import com.codinginflow.mvvmnewsapp.features.worldnews.WorldNewsFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,7 +15,6 @@ class MainActivity : AppCompatActivity() {
         fun onBottomNavigationFragmentReselected()
     }
 
-    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var worldNewsFragment: WorldNewsFragment
@@ -47,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
 
         title = when (selectedFragment) {
-            is WorldNewsFragment ->  "World News"
+            is WorldNewsFragment -> "World News"
             is SearchNewsFragment -> "Search News"
             is BookmarksFragment -> "Bookmarks"
             else -> ""
@@ -115,10 +113,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
