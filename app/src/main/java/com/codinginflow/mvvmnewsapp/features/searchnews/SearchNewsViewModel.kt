@@ -27,6 +27,8 @@ class SearchNewsViewModel @ViewModelInject constructor(
 
     var refreshInProgress = false
 
+    var newQueryInProgress = false
+
     var pendingScrollToTopAfterRefresh = false
 
     fun searchArticles(query: String) {

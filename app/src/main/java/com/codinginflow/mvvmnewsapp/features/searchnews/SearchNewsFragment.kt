@@ -83,6 +83,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     is LoadState.Loading -> {
 //                        Timber.d("refresh = LoadState.Loading")
                         viewModel.refreshInProgress = true
+                        recyclerView.isVisible = !viewModel.newQueryInProgress
                     }
                     is LoadState.NotLoading -> {
                         if (viewModel.refreshInProgress) {
@@ -90,6 +91,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                             recyclerView.scrollToPosition(0)
                             recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
+                            viewModel.newQueryInProgress = false
                             viewModel.pendingScrollToTopAfterRefresh = true
                         }
                     }
@@ -101,6 +103,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                         if (viewModel.refreshInProgress) {
                             recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
+                            viewModel.newQueryInProgress = false
                             showSnackbar(errorMessage)
                         }
                     }
@@ -162,8 +165,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             // make cached data invisible because we will jump back to the top after refresh finished
             // PagingData.empty() avoids that the old list flashes up for a moment if we are offline
             newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
-            binding.recyclerView.isVisible = false
-            binding.recyclerView.scrollToPosition(0)
+            viewModel.newQueryInProgress = true
+//            binding.recyclerView.scrollToPosition(0) // shouldn't be necessary because a new search triggers refresh
             viewModel.searchArticles(query)
             searchView.clearFocus()
         }

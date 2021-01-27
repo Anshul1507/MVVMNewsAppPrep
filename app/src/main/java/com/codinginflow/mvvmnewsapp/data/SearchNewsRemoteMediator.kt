@@ -36,7 +36,7 @@ class SearchNewsRemoteMediator(
             }
 
             val apiResponse = newsApi.searchNews(searchQuery, page, state.config.pageSize)
-//            delay(3000) // for testing purposes
+//            delay(6000) // for testing purposes
             val serverSearchResults = apiResponse.response.results
             val endOfPaginationReached = serverSearchResults.isEmpty()
 
