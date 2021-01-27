@@ -16,10 +16,9 @@ import javax.inject.Inject
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
-    private val newsDb: NewsArticleDatabase,
-    private val newsArticleDatabase: NewsArticleDatabase,
+    private val newsArticleDb: NewsArticleDatabase,
 ) {
-    private val newsArticleDao = newsDb.newsArticleDao()
+    private val newsArticleDao = newsArticleDb.newsArticleDao()
 
     fun getBreakingNews(
         forceRefresh: Boolean,
@@ -51,7 +50,7 @@ class NewsRepository @Inject constructor(
                         )
                     }
 
-                newsDb.withTransaction {
+                newsArticleDb.withTransaction {
                     val breakingNews = breakingNewsArticles.map { article ->
                         BreakingNews(article.url)
                     }
@@ -98,7 +97,7 @@ class NewsRepository @Inject constructor(
             // normally we should be able to set a maxSize without PREPEND but there is currently a bug that causes an IndexOutOfBoundsException
             // TODO: 26.01.2021 Update dependency when next paging release is out
             config = PagingConfig(pageSize = 50),
-            remoteMediator = SearchNewsRemoteMediator(query, newsArticleDatabase, newsApi),
+            remoteMediator = SearchNewsRemoteMediator(query, newsArticleDb, newsApi),
             pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }
         ).flow
 
