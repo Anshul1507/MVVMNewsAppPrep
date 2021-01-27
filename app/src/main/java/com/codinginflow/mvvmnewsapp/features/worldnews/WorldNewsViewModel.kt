@@ -42,8 +42,6 @@ class WorldNewsViewModel @ViewModelInject constructor(
         ).asLiveData()
     }
 
-    var refreshInProgress = false
-
     init {
         viewModelScope.launch {
             // TODO: 26.01.2021 Test this a bit more to make sure it doesn't break anything
