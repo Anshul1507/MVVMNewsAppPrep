@@ -62,7 +62,12 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
+            buttonRetry.isVisible = false
+            textViewError.isVisible = false
+
             viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
+                Timber.d("BREAKING observe with result $result")
+
                 swipeRefreshLayout.isRefreshing = result is Resource.Loading
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
                 textViewError.isVisible = result.error != null && result.data.isNullOrEmpty()

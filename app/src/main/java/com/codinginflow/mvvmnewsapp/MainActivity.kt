@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchNewsFragment: SearchNewsFragment
     private lateinit var bookmarksFragment: BookmarksFragment
 
-    private val fragments: Array<out Fragment>
+    private val fragments: Array<Fragment>
         get() = arrayOf(
             worldNewsFragment,
             searchNewsFragment,
@@ -59,19 +59,19 @@ class MainActivity : AppCompatActivity() {
             bookmarksFragment = BookmarksFragment()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, worldNewsFragment, "breaking")
-                .add(R.id.fragment_container, searchNewsFragment, "search")
-                .add(R.id.fragment_container, bookmarksFragment, "bookmarks")
+                .add(R.id.fragment_container, worldNewsFragment, TAG_WORLD_NEWS_FRAGMENT)
+                .add(R.id.fragment_container, searchNewsFragment, TAG_SEARCH_NEWS_FRAGMENT)
+                .add(R.id.fragment_container, bookmarksFragment, TAG_BOOKMARKS_FRAGMENT)
                 .commitNow()
         } else {
-            selectedIndex = savedInstanceState.getInt("selectedIndex", 0)
-
             worldNewsFragment =
-                supportFragmentManager.findFragmentByTag("breaking") as WorldNewsFragment
+                supportFragmentManager.findFragmentByTag(TAG_WORLD_NEWS_FRAGMENT) as WorldNewsFragment
             searchNewsFragment =
-                supportFragmentManager.findFragmentByTag("search") as SearchNewsFragment
+                supportFragmentManager.findFragmentByTag(TAG_SEARCH_NEWS_FRAGMENT) as SearchNewsFragment
             bookmarksFragment =
-                supportFragmentManager.findFragmentByTag("bookmarks") as BookmarksFragment
+                supportFragmentManager.findFragmentByTag(TAG_BOOKMARKS_FRAGMENT) as BookmarksFragment
+
+            selectedIndex = savedInstanceState.getInt(KEY_SELECTED_INDEX, 0)
         }
 
         selectFragment(selectedFragment)
@@ -117,6 +117,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("selectedIndex", selectedIndex)
+        outState.putInt(KEY_SELECTED_INDEX, selectedIndex)
     }
 }
+
+private const val TAG_WORLD_NEWS_FRAGMENT = "TAG_WORLD_NEWS_FRAGMENT"
+private const val TAG_SEARCH_NEWS_FRAGMENT = "TAG_SEARCH_NEWS_FRAGMENT"
+private const val TAG_BOOKMARKS_FRAGMENT = "TAG_BOOKMARKS_FRAGMENT"
+private const val KEY_SELECTED_INDEX = "KEY_SELECTED_INDEX"

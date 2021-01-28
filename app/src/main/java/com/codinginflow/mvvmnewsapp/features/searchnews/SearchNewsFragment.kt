@@ -63,18 +63,19 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
+            recyclerView.isVisible = false
+            swipeRefreshLayout.isEnabled = false
+
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->
+                Timber.d("SEARCH: observe with result $result")
+                textViewInstructions.isVisible = false
+                swipeRefreshLayout.isEnabled = true
                 newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
             }
 
             swipeRefreshLayout.setOnRefreshListener {
                 // TODO: 26.01.2021 Not yet sure yet if retry refresh and refresh equivalent
                 newsPagingAdapter.refresh()
-            }
-
-            viewModel.hasCurrentQuery.observe(viewLifecycleOwner) { hasCurrentQuery ->
-                swipeRefreshLayout.isEnabled = hasCurrentQuery
-                textViewInstructions.isVisible = !hasCurrentQuery
             }
 
             newsPagingAdapter.addLoadStateListener { loadState ->
@@ -86,22 +87,22 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                         recyclerView.isVisible = !viewModel.newQueryInProgress
                     }
                     is LoadState.NotLoading -> {
+                        recyclerView.isVisible = newsPagingAdapter.itemCount > 0
                         if (viewModel.refreshInProgress) {
 //                            Timber.d("mediator.refresh = NotLoading -> scroll to 0")
                             recyclerView.scrollToPosition(0)
-                            recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
                             viewModel.newQueryInProgress = false
                             viewModel.pendingScrollToTopAfterRefresh = true
                         }
                     }
                     is LoadState.Error -> {
+                        recyclerView.isVisible = newsPagingAdapter.itemCount > 0
 //                        Timber.d("refresh = LoadState.Error")
                         val errorMessage =
                             "Could not load search results:\n${mediatorRefresh.error.localizedMessage ?: "An unknown error occurred"}"
                         textViewError.text = errorMessage
                         if (viewModel.refreshInProgress) {
-                            recyclerView.isVisible = true
                             viewModel.refreshInProgress = false
                             viewModel.newQueryInProgress = false
                             showSnackbar(errorMessage)
@@ -165,7 +166,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             // make cached data invisible because we will jump back to the top after refresh finished
             // PagingData.empty() avoids that the old list flashes up for a moment if we are offline
             newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
-            viewModel.newQueryInProgress = true
 //            binding.recyclerView.scrollToPosition(0) // shouldn't be necessary because a new search triggers refresh
             viewModel.searchArticles(query)
             searchView.clearFocus()

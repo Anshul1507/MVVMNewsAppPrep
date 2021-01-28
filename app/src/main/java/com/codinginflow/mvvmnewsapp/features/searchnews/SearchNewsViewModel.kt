@@ -17,15 +17,9 @@ class SearchNewsViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
-    private val currentQuery = state.getLiveData<String?>("currentQuery", null)
+    private val currentQuery = state.getLiveData<String?>("currentQuery")
     val newsArticles = currentQuery.switchMap { query ->
-        query?.let {
-            repository.getSearchResultsPaged(query).asLiveData().cachedIn(viewModelScope)
-        } ?: MutableLiveData(PagingData.empty())
-    }
-
-    val hasCurrentQuery = currentQuery.map { query ->
-        query != null
+        repository.getSearchResultsPaged(query).asLiveData().cachedIn(viewModelScope)
     }
 
     var refreshInProgress = false
@@ -35,6 +29,7 @@ class SearchNewsViewModel @Inject constructor(
     var pendingScrollToTopAfterRefresh = false
 
     fun searchArticles(query: String) {
+        newQueryInProgress = true
         currentQuery.value = query
     }
 
