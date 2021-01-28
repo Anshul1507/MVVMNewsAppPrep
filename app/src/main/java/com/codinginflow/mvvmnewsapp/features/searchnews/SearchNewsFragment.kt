@@ -63,7 +63,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
-            recyclerView.isVisible = false
             swipeRefreshLayout.isEnabled = false
 
             viewModel.newsArticles.observe(viewLifecycleOwner) { result ->

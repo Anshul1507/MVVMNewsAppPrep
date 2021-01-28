@@ -3,6 +3,7 @@ package com.codinginflow.mvvmnewsapp.features.worldnews
 import androidx.lifecycle.*
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.data.NewsRepository
+import com.codinginflow.mvvmnewsapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -20,13 +21,16 @@ class WorldNewsViewModel @Inject constructor(
 
     private val refreshTrigger = object : MutableLiveData<Refresh>() {
         override fun onActive() {
-            value = Refresh.NORMAL
+            if (breakingNews.value !is Resource.Loading) {
+                value = Refresh.NORMAL
+            }
         }
     }
+
     private val eventFlow = MutableSharedFlow<Event>()
     val events: Flow<Event> = eventFlow
 
-    val breakingNews = refreshTrigger.switchMap { refresh ->
+    val breakingNews: LiveData<Resource<List<NewsArticle>>> = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
@@ -46,7 +50,11 @@ class WorldNewsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             // TODO: 26.01.2021 Test this a bit more to make sure it doesn't break anything
-            repository.deleteArticlesFromCacheOlderThan(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30))
+            repository.deleteArticlesFromCacheOlderThan(
+                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(
+                    30
+                )
+            )
         }
     }
 

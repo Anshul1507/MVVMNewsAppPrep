@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                 .add(R.id.fragment_container, worldNewsFragment, TAG_WORLD_NEWS_FRAGMENT)
                 .add(R.id.fragment_container, searchNewsFragment, TAG_SEARCH_NEWS_FRAGMENT)
                 .add(R.id.fragment_container, bookmarksFragment, TAG_BOOKMARKS_FRAGMENT)
-                .commitNow()
+                .commit()
         } else {
             worldNewsFragment =
                 supportFragmentManager.findFragmentByTag(TAG_WORLD_NEWS_FRAGMENT) as WorldNewsFragment

@@ -31,7 +31,6 @@ class NewsRepository @Inject constructor(
             },
             fetch = {
                 val response = newsApi.getWorldNews()
-                Timber.d("Fetched: ${response.response.results}")
                 response.response.results
             },
             saveFetchResult = { serverBreakingNewsArticles ->
@@ -61,7 +60,6 @@ class NewsRepository @Inject constructor(
                 }
             },
             shouldFetch = { cachedArticles ->
-                Timber.d("shouldFetch with forceRefresh = $forceRefresh")
                 if (forceRefresh) {
                     true
                 } else {
