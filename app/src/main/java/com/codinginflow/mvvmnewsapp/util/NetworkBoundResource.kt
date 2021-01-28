@@ -1,6 +1,7 @@
 package com.codinginflow.mvvmnewsapp.util
 
 import kotlinx.coroutines.flow.*
+import timber.log.Timber
 
 inline fun <ResultType, RequestType> networkBoundResource(
     crossinline query: () -> Flow<ResultType>,
@@ -16,7 +17,6 @@ inline fun <ResultType, RequestType> networkBoundResource(
         emit(Resource.Loading(data))
 
         try {
-            // TODO: 28.01.2021 This throws CancellationException if we are not on the fragment when it's finishing!
 //            kotlinx.coroutines.delay(6000)
             saveFetchResult(fetch())
             onFetchSuccess()

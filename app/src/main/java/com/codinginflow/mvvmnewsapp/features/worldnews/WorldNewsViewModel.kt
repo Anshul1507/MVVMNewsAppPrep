@@ -6,8 +6,6 @@ import com.codinginflow.mvvmnewsapp.data.NewsRepository
 import com.codinginflow.mvvmnewsapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -27,8 +25,8 @@ class WorldNewsViewModel @Inject constructor(
         }
     }
 
-    private val eventFlow = MutableSharedFlow<Event>()
-    val events: Flow<Event> = eventFlow
+    private val eventChannel = Channel<Event>()
+    val events = eventChannel.receiveAsFlow()
 
     val breakingNews: LiveData<Resource<List<NewsArticle>>> = refreshTrigger.switchMap { refresh ->
         Timber.d("forceRefresh = ${Refresh.FORCE == refresh}")
@@ -36,15 +34,17 @@ class WorldNewsViewModel @Inject constructor(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
             onFetchSuccess = {
                 viewModelScope.launch {
-                    eventFlow.emit(Event.ScrollToTop)
+                    eventChannel.send(Event.ScrollToTop)
                 }
             },
             onFetchFailed = { t ->
                 viewModelScope.launch {
-                    eventFlow.emit(Event.ShowErrorMessage(t))
+                    eventChannel.send(Event.ShowErrorMessage(t))
                 }
             }
-        ).asLiveData()
+        ).asLiveData(
+            context = viewModelScope.coroutineContext,
+            timeoutInMs = Long.MAX_VALUE)
     }
 
     init {

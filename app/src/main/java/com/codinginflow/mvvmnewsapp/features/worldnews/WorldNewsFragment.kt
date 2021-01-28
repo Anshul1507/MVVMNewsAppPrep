@@ -105,7 +105,6 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                     when (event) {
                         is WorldNewsViewModel.Event.ShowErrorMessage -> {
                             showSnackbar(
-                                // TODO: 23.01.2021 We build this error string in 2 different places -> should we unite this somewhere upstream?
                                 "Could not refresh:\n${event.error.localizedMessage ?: "An unknown error occurred"}"
                             )
                         }
