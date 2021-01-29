@@ -11,7 +11,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,9 +22,6 @@ import com.codinginflow.mvvmnewsapp.util.onQueryTextSubmit
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.filter
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -59,7 +55,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
-                itemAnimator = null // we don't need animations and this gets us rid of ugly DiffUtil changes
+                itemAnimator =
+                    null // we don't need animations and this gets us rid of ugly DiffUtil changes
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
@@ -98,8 +95,11 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                     is LoadState.Error -> {
                         recyclerView.isVisible = newsPagingAdapter.itemCount > 0
 //                        Timber.d("refresh = LoadState.Error")
-                        val errorMessage =
-                            "Could not load search results:\n${mediatorRefresh.error.localizedMessage ?: "An unknown error occurred"}"
+                        val errorMessage = resources.getString(
+                            R.string.could_not_load_search_results,
+                            mediatorRefresh.error.localizedMessage
+                                ?: "An unknown error occurred"
+                        )
                         textViewError.text = errorMessage
                         if (viewModel.refreshInProgress) {
                             viewModel.refreshInProgress = false

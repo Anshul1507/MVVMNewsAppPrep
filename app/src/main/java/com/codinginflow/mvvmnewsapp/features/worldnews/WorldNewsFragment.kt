@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
-import com.codinginflow.mvvmnewsapp.core.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
 import com.codinginflow.mvvmnewsapp.databinding.FragmentWorldNewsBinding
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
@@ -69,8 +69,10 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
                 textViewError.isVisible = result.error != null && result.data.isNullOrEmpty()
                 buttonRetry.isVisible = result.error != null && result.data.isNullOrEmpty()
-                textViewError.text =
-                    "Could not refresh:\n${result.error?.localizedMessage ?: "An unknown error occurred"}"
+                textViewError.text = resources.getString(
+                    R.string.could_not_refresh,
+                    result.error?.localizedMessage ?: "An unknown error occurred"
+                )
 
                 newsAdapter.submitList(result.data)
             }
@@ -105,7 +107,10 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                     when (event) {
                         is WorldNewsViewModel.Event.ShowErrorMessage -> {
                             showSnackbar(
-                                "Could not refresh:\n${event.error.localizedMessage ?: "An unknown error occurred"}"
+                                resources.getString(
+                                    R.string.could_not_refresh,
+                                    event.error.localizedMessage ?: "An unknown error occurred"
+                                )
                             )
                         }
                         is WorldNewsViewModel.Event.ScrollToTop -> recyclerView.scrollToPosition(0)

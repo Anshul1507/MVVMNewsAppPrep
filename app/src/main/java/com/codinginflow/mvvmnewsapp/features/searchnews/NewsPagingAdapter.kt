@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.databinding.ItemNewsArticleBinding
-import com.codinginflow.mvvmnewsapp.core.shared.NewsArticleComparator
-import com.codinginflow.mvvmnewsapp.core.shared.NewsViewHolder
+import com.codinginflow.mvvmnewsapp.shared.NewsArticleComparator
+import com.codinginflow.mvvmnewsapp.shared.NewsViewHolder
 
 class NewsPagingAdapter(
     private val onItemClick: (NewsArticle) -> Unit,

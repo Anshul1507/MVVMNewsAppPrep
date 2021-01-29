@@ -41,9 +41,9 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
 
         title = when (selectedFragment) {
-            is WorldNewsFragment -> "World News"
-            is SearchNewsFragment -> "Search News"
-            is BookmarksFragment -> "Bookmarks"
+            is WorldNewsFragment -> getString(R.string.title_world_news)
+            is SearchNewsFragment -> getString(R.string.title_search_news)
+            is BookmarksFragment -> getString(R.string.title_bookmarks)
             else -> ""
         }
     }
@@ -77,20 +77,14 @@ class MainActivity : AppCompatActivity() {
         selectFragment(selectedFragment)
 
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
-            val currentFragment = selectedFragment
-
             val fragment = when (item.itemId) {
                 R.id.worldNewsFragment -> worldNewsFragment
                 R.id.searchNewsFragment -> searchNewsFragment
                 R.id.bookmarksFragment -> bookmarksFragment
-                else -> null
+                else -> throw IllegalArgumentException("Invalid itemId")
             }
 
-            if (fragment == null) {
-                return@setOnNavigationItemSelectedListener false
-            }
-
-            if (currentFragment === fragment) {
+            if (selectedFragment === fragment) {
                 @Suppress("USELESS_IS_CHECK")
                 if (fragment is OnBottomNavigationFragmentReselected) {
                     fragment.onBottomNavigationFragmentReselected()

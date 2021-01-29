@@ -6,6 +6,7 @@ import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.LoadStateHeaderFooterBinding
 
 class NewsLoadStateAdapter(private val retry: () -> Unit) :
@@ -38,7 +39,8 @@ class NewsLoadStateAdapter(private val retry: () -> Unit) :
                 textViewError.isVisible = loadState is LoadState.Error
 
                 if (loadState is LoadState.Error) {
-                    textViewError.text = loadState.error.localizedMessage ?: "Results could not be loaded"
+                    textViewError.text = loadState.error.localizedMessage
+                        ?: binding.root.context.getString(R.string.results_could_not_be_loaded)
                 }
             }
         }

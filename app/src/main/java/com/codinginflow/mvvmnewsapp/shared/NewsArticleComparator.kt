@@ -1,4 +1,4 @@
-package com.codinginflow.mvvmnewsapp.core.shared
+package com.codinginflow.mvvmnewsapp.shared
 
 import androidx.recyclerview.widget.DiffUtil
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
