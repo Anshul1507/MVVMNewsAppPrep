@@ -29,14 +29,14 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
     MainActivity.OnBottomNavigationFragmentReselected {
     private val viewModel: SearchNewsViewModel by viewModels()
 
-    private lateinit var newsPagingAdapter: NewsPagingAdapter
+    private lateinit var newsArticlePagingAdapter: NewsArticlePagingAdapter
 
     private val binding by viewBinding(FragmentSearchNewsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        newsPagingAdapter = NewsPagingAdapter(
+        newsArticlePagingAdapter = NewsArticlePagingAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
                 val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -50,9 +50,9 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         binding.apply {
             recyclerView.apply {
                 setHasFixedSize(true)
-                adapter = newsPagingAdapter.withLoadStateHeaderAndFooter(
-                    header = NewsLoadStateAdapter(newsPagingAdapter::retry),
-                    footer = NewsLoadStateAdapter(newsPagingAdapter::retry)
+                adapter = newsArticlePagingAdapter.withLoadStateHeaderAndFooter(
+                    header = NewsArticleLoadStateAdapter(newsArticlePagingAdapter::retry),
+                    footer = NewsArticleLoadStateAdapter(newsArticlePagingAdapter::retry)
                 )
                 layoutManager = LinearLayoutManager(requireContext())
                 itemAnimator =
@@ -66,15 +66,15 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                 Timber.d("SEARCH: observe with result $result")
                 textViewInstructions.isVisible = false
                 swipeRefreshLayout.isEnabled = true
-                newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
+                newsArticlePagingAdapter.submitData(viewLifecycleOwner.lifecycle, result)
             }
 
             swipeRefreshLayout.setOnRefreshListener {
                 // TODO: 26.01.2021 Not yet sure yet if retry refresh and refresh equivalent
-                newsPagingAdapter.refresh()
+                newsArticlePagingAdapter.refresh()
             }
 
-            newsPagingAdapter.addLoadStateListener { loadState ->
+            newsArticlePagingAdapter.addLoadStateListener { loadState ->
 
                 when (val mediatorRefresh = loadState.mediator?.refresh) {
                     is LoadState.Loading -> {
@@ -83,7 +83,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                         recyclerView.isVisible = !viewModel.newQueryInProgress
                     }
                     is LoadState.NotLoading -> {
-                        recyclerView.isVisible = newsPagingAdapter.itemCount > 0
+                        recyclerView.isVisible = newsArticlePagingAdapter.itemCount > 0
                         if (viewModel.refreshInProgress) {
 //                            Timber.d("mediator.refresh = NotLoading -> scroll to 0")
                             recyclerView.scrollToPosition(0)
@@ -93,7 +93,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
                         }
                     }
                     is LoadState.Error -> {
-                        recyclerView.isVisible = newsPagingAdapter.itemCount > 0
+                        recyclerView.isVisible = newsArticlePagingAdapter.itemCount > 0
 //                        Timber.d("refresh = LoadState.Error")
                         val errorMessage = resources.getString(
                             R.string.could_not_load_search_results,
@@ -112,16 +112,16 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
 //                Timber.d("loadState.refresh is ${loadState.refresh}")
                 swipeRefreshLayout.isRefreshing = loadState.refresh is LoadState.Loading
                 val showErrorViews =
-                    loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsPagingAdapter.itemCount < 1
+                    loadState.refresh is LoadState.Error && loadState.source.refresh is LoadState.NotLoading && newsArticlePagingAdapter.itemCount < 1
                 buttonRetry.isVisible = showErrorViews
                 textViewError.isVisible = showErrorViews
 
                 textViewNoResults.isVisible = loadState.refresh is LoadState.NotLoading &&
                         loadState.refresh.endOfPaginationReached &&
-                        newsPagingAdapter.itemCount < 1
+                        newsArticlePagingAdapter.itemCount < 1
             }
 
-            newsPagingAdapter.registerAdapterDataObserver(object :
+            newsArticlePagingAdapter.registerAdapterDataObserver(object :
                 RecyclerView.AdapterDataObserver() {
 
                 override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
@@ -149,7 +149,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             })
 
             buttonRetry.setOnClickListener {
-                newsPagingAdapter.retry()
+                newsArticlePagingAdapter.retry()
             }
         }
         setHasOptionsMenu(true)
@@ -164,7 +164,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
         searchView.onQueryTextSubmit { query ->
             // make cached data invisible because we will jump back to the top after refresh finished
             // PagingData.empty() avoids that the old list flashes up for a moment if we are offline
-            newsPagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
+            newsArticlePagingAdapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
 //            binding.recyclerView.scrollToPosition(0) // shouldn't be necessary because a new search triggers refresh
             viewModel.searchArticles(query)
             searchView.clearFocus()
@@ -176,7 +176,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             R.id.refresh -> {
                 // clicking retry on the footer after this failed causes it to retry refresh. I reported
                 // this to dlam and he said they will probably provide an argument in the future
-                newsPagingAdapter.refresh()
+                newsArticlePagingAdapter.refresh()
                 true
             }
             else -> super.onOptionsItemSelected(item)

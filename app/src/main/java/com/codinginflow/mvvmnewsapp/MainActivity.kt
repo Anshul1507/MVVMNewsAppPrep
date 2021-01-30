@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.worldNewsFragment -> worldNewsFragment
                 R.id.searchNewsFragment -> searchNewsFragment
                 R.id.bookmarksFragment -> bookmarksFragment
-                else -> throw IllegalArgumentException("Invalid itemId")
+                else -> throw IllegalArgumentException("Unexpected itemId")
             }
 
             if (selectedFragment === fragment) {

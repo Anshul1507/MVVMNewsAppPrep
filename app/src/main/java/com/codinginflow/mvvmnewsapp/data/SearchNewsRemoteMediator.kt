@@ -50,7 +50,7 @@ class SearchNewsRemoteMediator(
                 NewsArticle(
                     title = serverSearchResultArticle.webTitle,
                     url = serverSearchResultArticle.webUrl,
-                    thumbnail = serverSearchResultArticle.fields?.thumbnail,
+                    thumbnailUrl = serverSearchResultArticle.fields?.thumbnail,
                     isBookmarked = bookmarked,
                 )
             }

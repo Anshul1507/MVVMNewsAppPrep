@@ -6,17 +6,17 @@ import androidx.paging.PagingDataAdapter
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.databinding.ItemNewsArticleBinding
 import com.codinginflow.mvvmnewsapp.shared.NewsArticleComparator
-import com.codinginflow.mvvmnewsapp.shared.NewsViewHolder
+import com.codinginflow.mvvmnewsapp.shared.NewsArticleViewHolder
 
-class NewsPagingAdapter(
+class NewsArticlePagingAdapter(
     private val onItemClick: (NewsArticle) -> Unit,
     private val onBookmarkClick: (NewsArticle) -> Unit
-) : PagingDataAdapter<NewsArticle, NewsViewHolder>(NewsArticleComparator()) {
+) : PagingDataAdapter<NewsArticle, NewsArticleViewHolder>(NewsArticleComparator()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsArticleViewHolder {
         val binding =
             ItemNewsArticleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NewsViewHolder(binding,
+        return NewsArticleViewHolder(binding,
             onItemClick = { position ->
                 val article = getItem(position)
                 if (article != null) {
@@ -31,7 +31,7 @@ class NewsPagingAdapter(
             })
     }
 
-    override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: NewsArticleViewHolder, position: Int) {
         val currentItem = getItem(position)
         if (currentItem != null) {
             holder.bind(currentItem)

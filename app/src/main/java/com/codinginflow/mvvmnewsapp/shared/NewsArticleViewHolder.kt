@@ -6,7 +6,7 @@ import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.data.NewsArticle
 import com.codinginflow.mvvmnewsapp.databinding.ItemNewsArticleBinding
 
-class NewsViewHolder(
+class NewsArticleViewHolder(
     private val binding: ItemNewsArticleBinding,
     private val onItemClick: (Int) -> Unit,
     private val onBookmarkClick: (Int) -> Unit
@@ -15,16 +15,18 @@ class NewsViewHolder(
     fun bind(article: NewsArticle) {
         binding.apply {
             Glide.with(itemView)
-                .load(article.thumbnail)
+                .load(article.thumbnailUrl)
                 .error(R.drawable.image_placeholder)
                 .into(imageView)
 
             textViewTitle.text = article.title
 
-            imageViewBookmark.setImageResource(when {
-                article.isBookmarked -> R.drawable.ic_bookmark_selected
-                else -> R.drawable.ic_bookmark_unselected
-            })
+            imageViewBookmark.setImageResource(
+                when {
+                    article.isBookmarked -> R.drawable.ic_bookmark_selected
+                    else -> R.drawable.ic_bookmark_unselected
+                }
+            )
         }
     }
 

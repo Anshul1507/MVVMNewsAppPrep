@@ -9,14 +9,16 @@ import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.networkBoundResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import retrofit2.HttpException
 import timber.log.Timber
+import java.io.IOException
 import java.text.DateFormat
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
-    private val newsArticleDb   : NewsArticleDatabase,
+    private val newsArticleDb: NewsArticleDatabase,
 ) {
     private val newsArticleDao = newsArticleDb.newsArticleDao()
 
@@ -44,7 +46,7 @@ class NewsRepository @Inject constructor(
                         NewsArticle(
                             title = serverBreakingNewsArticle.webTitle,
                             url = serverBreakingNewsArticle.webUrl,
-                            thumbnail = serverBreakingNewsArticle.fields?.thumbnail,
+                            thumbnailUrl = serverBreakingNewsArticle.fields?.thumbnail,
                             isBookmarked = bookmarked,
                         )
                     }
@@ -86,7 +88,12 @@ class NewsRepository @Inject constructor(
                 }
             },
             onFetchSuccess = onFetchSuccess,
-            onFetchFailed = onFetchFailed
+            onFetchFailed = { t ->
+                if (t !is HttpException && t !is IOException) {
+                    throw t
+                }
+                onFetchFailed(t)
+            }
         )
 
     fun getSearchResultsPaged(query: String): Flow<PagingData<NewsArticle>> =

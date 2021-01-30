@@ -52,14 +52,14 @@ class WorldNewsViewModel @Inject constructor(
             // TODO: 26.01.2021 Test this a bit more to make sure it doesn't break anything
             repository.deleteArticlesFromCacheOlderThan(
                 System.currentTimeMillis() - TimeUnit.DAYS.toMillis(
-                    30
+                    7
                 )
             )
         }
     }
 
     fun onManualRefresh() {
-        Timber.d("onManualRefresh()")
+        if (breakingNews.value is Resource.Loading) return
         refreshTrigger.value = Refresh.FORCE
     }
 

@@ -45,12 +45,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(
-        app: Application
-    ) = Room.databaseBuilder(app, NewsArticleDatabase::class.java, "bookmarks_database")
-        .fallbackToDestructiveMigration()
-        .build()
-
-    @Provides
-    fun provideArticleDao(db: NewsArticleDatabase) = db.newsArticleDao()
+    fun provideDatabase(app: Application): NewsArticleDatabase =
+        Room.databaseBuilder(app, NewsArticleDatabase::class.java, "news_article_database")
+            .fallbackToDestructiveMigration()
+            .build()
 }

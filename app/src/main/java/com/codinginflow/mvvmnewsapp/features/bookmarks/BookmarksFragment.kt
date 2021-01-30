@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.FragmentBookmarksBinding
-import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.shared.NewsArticleListAdapter
 import com.codinginflow.mvvmnewsapp.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,7 +28,7 @@ class BookmarksFragment : Fragment(R.layout.fragment_bookmarks), MainActivity.On
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val bookmarksAdapter = NewsListAdapter(
+        val bookmarksAdapter = NewsArticleListAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
                 val intent = Intent(Intent.ACTION_VIEW, uri)

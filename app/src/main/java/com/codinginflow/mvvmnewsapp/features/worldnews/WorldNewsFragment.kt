@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.MainActivity
 import com.codinginflow.mvvmnewsapp.R
-import com.codinginflow.mvvmnewsapp.shared.NewsListAdapter
+import com.codinginflow.mvvmnewsapp.shared.NewsArticleListAdapter
 import com.codinginflow.mvvmnewsapp.databinding.FragmentWorldNewsBinding
 import com.codinginflow.mvvmnewsapp.util.Resource
 import com.codinginflow.mvvmnewsapp.util.showSnackbar
@@ -30,7 +30,7 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
     private val viewModel: WorldNewsViewModel by viewModels()
 
-    private lateinit var newsAdapter: NewsListAdapter
+    private lateinit var newsArticleAdapter: NewsArticleListAdapter
 
     private val binding by viewBinding(FragmentWorldNewsBinding::bind)
 
@@ -41,7 +41,7 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
         firstInsertCompleted = false
 
-        newsAdapter = NewsListAdapter(
+        newsArticleAdapter = NewsArticleListAdapter(
             onItemClick = { article ->
                 val uri = Uri.parse(article.url)
                 val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -54,16 +54,16 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
 
         binding.apply {
             recyclerView.apply {
-                setHasFixedSize(true)
-                adapter = newsAdapter
+                adapter = newsArticleAdapter
                 layoutManager = LinearLayoutManager(requireContext())
+                setHasFixedSize(true)
                 itemAnimator =
                     null // we don't need animations and this gets us rid of ugly DiffUtil changes
 //                itemAnimator?.changeDuration = 0 // get rid of bookmark click flash
             }
 
             viewModel.breakingNews.observe(viewLifecycleOwner) { result ->
-                Timber.d("BREAKING observe with result $result")
+                Timber.d("BREAKING observe with result.data = ${result.data}")
 
                 swipeRefreshLayout.isRefreshing = result is Resource.Loading
                 recyclerView.isVisible = !result.data.isNullOrEmpty()
@@ -74,10 +74,10 @@ class WorldNewsFragment : Fragment(R.layout.fragment_world_news),
                     result.error?.localizedMessage ?: "An unknown error occurred"
                 )
 
-                newsAdapter.submitList(result.data)
+                newsArticleAdapter.submitList(result.data)
             }
 
-            newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            newsArticleAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                 override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                     Timber.d("onItemRangeMoved count: $itemCount")
                     recyclerView.scrollToPosition(0)

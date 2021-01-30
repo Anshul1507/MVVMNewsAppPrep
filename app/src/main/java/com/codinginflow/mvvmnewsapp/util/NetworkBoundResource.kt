@@ -1,7 +1,6 @@
 package com.codinginflow.mvvmnewsapp.util
 
 import kotlinx.coroutines.flow.*
-import timber.log.Timber
 
 inline fun <ResultType, RequestType> networkBoundResource(
     crossinline query: () -> Flow<ResultType>,
@@ -17,7 +16,6 @@ inline fun <ResultType, RequestType> networkBoundResource(
         emit(Resource.Loading(data))
 
         try {
-//            kotlinx.coroutines.delay(6000)
             saveFetchResult(fetch())
             onFetchSuccess()
             query().map { Resource.Success(it) }

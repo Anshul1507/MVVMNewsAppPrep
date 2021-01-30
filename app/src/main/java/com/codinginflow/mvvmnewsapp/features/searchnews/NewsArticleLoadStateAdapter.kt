@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmnewsapp.R
 import com.codinginflow.mvvmnewsapp.databinding.LoadStateHeaderFooterBinding
 
-class NewsLoadStateAdapter(private val retry: () -> Unit) :
-    LoadStateAdapter<NewsLoadStateAdapter.LoadStateViewHolder>() {
+class NewsArticleLoadStateAdapter(private val retry: () -> Unit) :
+    LoadStateAdapter<NewsArticleLoadStateAdapter.LoadStateViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadStateViewHolder {
         val binding = LoadStateHeaderFooterBinding.inflate(
