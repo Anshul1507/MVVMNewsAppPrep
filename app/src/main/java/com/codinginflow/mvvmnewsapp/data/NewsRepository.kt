@@ -51,11 +51,11 @@ class NewsRepository @Inject constructor(
                         )
                     }
 
-                newsArticleDb.withTransaction {
-                    val breakingNews = breakingNewsArticles.map { article ->
-                        BreakingNews(article.url)
-                    }
+                val breakingNews = breakingNewsArticles.map { article ->
+                    BreakingNews(article.url)
+                }
 
+                newsArticleDb.withTransaction {
                     newsArticleDao.deleteAllBreakingNews()
                     newsArticleDao.insertArticles(breakingNewsArticles)
                     newsArticleDao.insertBreakingNews(breakingNews)

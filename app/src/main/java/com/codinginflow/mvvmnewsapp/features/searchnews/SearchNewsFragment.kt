@@ -70,7 +70,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news),
             }
 
             swipeRefreshLayout.setOnRefreshListener {
-                // TODO: 26.01.2021 Not yet sure yet if retry refresh and refresh equivalent
+                // TODO: 26.01.2021 Not yet sure yet if retry refresh and refresh are equivalent
                 newsArticlePagingAdapter.refresh()
             }
 

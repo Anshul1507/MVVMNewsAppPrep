@@ -33,18 +33,15 @@ class WorldNewsViewModel @Inject constructor(
         repository.getBreakingNews(
             Refresh.FORCE == refresh, // this direction makes it Java null-safe
             onFetchSuccess = {
-                viewModelScope.launch {
-                    eventChannel.send(Event.ScrollToTop)
-                }
+                viewModelScope.launch { eventChannel.send(Event.ScrollToTop) }
             },
             onFetchFailed = { t ->
-                viewModelScope.launch {
-                    eventChannel.send(Event.ShowErrorMessage(t))
-                }
+                viewModelScope.launch { eventChannel.send(Event.ShowErrorMessage(t)) }
             }
         ).asLiveData(
             context = viewModelScope.coroutineContext,
-            timeoutInMs = Long.MAX_VALUE)
+            timeoutInMs = Long.MAX_VALUE
+        )
     }
 
     init {

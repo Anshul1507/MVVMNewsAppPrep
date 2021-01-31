@@ -17,8 +17,10 @@ class SearchNewsViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
+    // TODO: 30.01.2021 This shows the cached data after process death without the RecyclerView being invisible
     private val currentQuery = state.getLiveData<String?>("currentQuery")
     val newsArticles = currentQuery.switchMap { query ->
+        newQueryInProgress = true
         repository.getSearchResultsPaged(query).asLiveData().cachedIn(viewModelScope)
     }
 
@@ -29,7 +31,6 @@ class SearchNewsViewModel @Inject constructor(
     var pendingScrollToTopAfterRefresh = false
 
     fun searchArticles(query: String) {
-        newQueryInProgress = true
         currentQuery.value = query
     }
 
